@@ -1,6 +1,26 @@
 import 'package:get/get.dart';
 
 class SplashController extends GetxController {
+  final selectedGender = 'Men'.obs;
+  final selectedAgeRange = 'Age Range'.obs;
+
+  final List<String> ageRanges = [
+    'Under 18',
+    '18-24',
+    '25-34',
+    '35-44',
+    '45-54',
+    '55+',
+  ];
+
+  void setGender(String gender) {
+    selectedGender.value = gender;
+  }
+
+  void setAgeRange(String ageRange) {
+    selectedAgeRange.value = ageRange;
+  }
+
   @override
   void onInit() {
     super.onInit();
@@ -8,19 +28,7 @@ class SplashController extends GetxController {
   }
 
   Future<void> _initializeApp() async {
-    // Simulate initialization
-    await Future.delayed(const Duration(seconds: 2));
-
-    // Check if onboarding is complete
-    // For now, navigate to home - you can implement onboarding check later
-    Get.offAllNamed('/home');
-
-    // Future implementation:
-    // final storageService = Get.find<StorageService>();
-    // if (storageService.isOnboardingComplete) {
-    //   Get.offAllNamed('/home');
-    // } else {
-    //   Get.offAllNamed('/onboarding');
-    // }
+    // Currently used for onboarding setup, so we do not auto-navigate here
   }
 }
+

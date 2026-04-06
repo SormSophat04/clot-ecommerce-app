@@ -61,7 +61,7 @@ class AuthController extends GetxController {
       //   colorText: Colors.white,
       // );
 
-      Get.offAllNamed(Routes.mainLayout);
+      Get.offAllNamed(Routes.splash);
     } catch (e) {
       _showError(e);
     } finally {
@@ -85,7 +85,7 @@ class AuthController extends GetxController {
         colorText: Colors.white,
       );
 
-      Get.offAllNamed(Routes.home);
+      Get.offAllNamed(Routes.splash);
     } catch (e) {
       _showError(e);
     } finally {

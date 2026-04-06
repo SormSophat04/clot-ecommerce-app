@@ -1,23 +1,26 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
+import 'cart_controller.dart';
+import 'widgets/cart_states.dart';
 
-class CartView extends StatelessWidget {
+class CartView extends GetView<CartController> {
   const CartView({super.key});
 
   @override
   Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+
     return Scaffold(
-      appBar: AppBar(title: const Text('Shopping Cart')),
-      body: const Center(
-        child: Text('Cart View - To be implemented'),
+      backgroundColor: theme.colorScheme.surface,
+      body: SafeArea(
+        child: Obx(() {
+          if (controller.cartItems.isEmpty) {
+            return const EmptyCartState();
+          } else {
+            return const PopulatedCartState();
+          }
+        }),
       ),
     );
-  }
-}
-
-class CartBinding extends Bindings {
-  @override
-  void dependencies() {
-    // Get.lazyPut<CartController>(() => CartController());
   }
 }

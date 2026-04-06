@@ -1,16 +1,16 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
+import '../../../core/widgets/common/feature_placeholder_scaffold.dart';
 
 class EditProfileView extends StatelessWidget {
   const EditProfileView({super.key});
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(title: const Text('Edit Profile')),
-      body: const Center(
-        child: Text('Edit Profile View - To be implemented'),
-      ),
+    return const FeaturePlaceholderScaffold(
+      title: 'Edit Profile',
+      message: 'Edit profile view is coming soon.',
+      icon: Icons.person_outline,
     );
   }
 }

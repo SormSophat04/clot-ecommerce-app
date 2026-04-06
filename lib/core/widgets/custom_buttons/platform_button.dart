@@ -4,8 +4,8 @@ class PlatformButton extends StatelessWidget {
   final String text;
   final Widget? icon;
   final VoidCallback? onPressed;
-  final Color backgroundColor;
-  final Color textColor;
+  final Color? backgroundColor;
+  final Color? textColor;
   final double height;
   final bool isFullWidth;
 
@@ -14,22 +14,31 @@ class PlatformButton extends StatelessWidget {
     required this.text,
     this.icon,
     this.onPressed,
-    this.backgroundColor = const Color(0xFFF4F4F4),
-    this.textColor = Colors.black,
+    this.backgroundColor,
+    this.textColor,
     this.height = 56,
     this.isFullWidth = true,
   });
 
   @override
   Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    final colorScheme = theme.colorScheme;
+    
+    final resolvedBg = backgroundColor ??
+        theme.inputDecorationTheme.fillColor ??
+        colorScheme.surfaceContainerHighest;
+        
+    final resolvedText = textColor ?? colorScheme.onSurface;
+
     return SizedBox(
       width: isFullWidth ? double.infinity : null,
       height: height,
       child: ElevatedButton(
         onPressed: onPressed,
         style: ElevatedButton.styleFrom(
-          backgroundColor: backgroundColor,
-          foregroundColor: textColor,
+          backgroundColor: resolvedBg,
+          foregroundColor: resolvedText,
           elevation: 0,
           shape: RoundedRectangleBorder(
             borderRadius: BorderRadius.circular(100),
@@ -49,7 +58,7 @@ class PlatformButton extends StatelessWidget {
                 style: TextStyle(
                   fontSize: 16,
                   fontWeight: FontWeight.w600,
-                  color: textColor,
+                  color: resolvedText,
                 ),
               ),
             ),

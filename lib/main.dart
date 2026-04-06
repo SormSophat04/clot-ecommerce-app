@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:get/get.dart';
 
 import 'core/bindings/initial_binding.dart';
@@ -18,7 +19,7 @@ Future<void> mainFlavor() async {
   );
   final initialRoute = Flavor.isProd() && !securityState.isTrustedDevice
       ? Routes.securityBlocked
-      : Routes.login;
+      : Routes.mainLayout;
 
   runApp(MyApp(initialRoute: initialRoute));
 }
@@ -30,15 +31,22 @@ class MyApp extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return GetMaterialApp(
-      title: 'E-Commerce App',
-      debugShowCheckedModeBanner: false,
-      theme: AppTheme.lightTheme,
-      darkTheme: AppTheme.darkTheme,
-      themeMode: ThemeMode.system,
-      initialBinding: InitialBinding(),
-      initialRoute: initialRoute,
-      getPages: AppPages.routes,
+    return ScreenUtilInit(
+      designSize: const Size(393, 852), // iPhone 14 Pro design size
+      minTextAdapt: true,
+      splitScreenMode: true,
+      builder: (context, child) {
+        return GetMaterialApp(
+          title: 'E-Commerce App',
+          debugShowCheckedModeBanner: false,
+          theme: AppTheme.lightTheme,
+          darkTheme: AppTheme.darkTheme,
+          themeMode: ThemeMode.system,
+          initialBinding: InitialBinding(),
+          initialRoute: initialRoute,
+          getPages: AppPages.routes,
+        );
+      },
     );
   }
 }

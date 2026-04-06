@@ -5,7 +5,11 @@ abstract class AppPages {
 
   static final routes = [
     // Main Layout Module
-    GetPage(name: Routes.mainLayout, page: () => MainLayoutView()),
+    GetPage(
+      name: Routes.mainLayout,
+      page: () => MainLayoutView(),
+      binding: MainLayoutBinding(),
+    ),
 
     // Auth Module
     GetPage(
@@ -39,9 +43,17 @@ abstract class AppPages {
     ),
 
     // Home Module
-    GetPage(name: Routes.home, page: () => const HomeView()),
+    GetPage(
+      name: Routes.home,
+      page: () => const HomeView(),
+      binding: HomeBinding(),
+    ),
 
     // Product Module
+    GetPage(
+      name: Routes.product,
+      page: () => const ProductView(),
+    ),
     GetPage(
       name: Routes.productDetails,
       page: () => const ProductDetailsView(),
@@ -104,6 +116,16 @@ abstract class AppPages {
       name: Routes.addAddress,
       page: () => const AddAddressView(),
       binding: AddAddressBinding(),
+    ),
+    GetPage(
+      name: Routes.payment,
+      page: () => const PaymentView(),
+      binding: PaymentBinding(),
+    ),
+    GetPage(
+      name: Routes.addCard,
+      page: () => const AddCardView(),
+      binding: AddCardBinding(),
     ),
 
     // Search Module
