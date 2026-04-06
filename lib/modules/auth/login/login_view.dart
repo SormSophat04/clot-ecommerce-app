@@ -1,5 +1,6 @@
 import 'package:clot_ecommerce_app/core/widgets/custom_buttons/platform_button.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:get/get.dart';
 import '../../../core/widgets/auth/auth_form_scaffold.dart';
 import '../../../core/widgets/auth/auth_header.dart';
@@ -24,14 +25,14 @@ class LoginView extends StatelessWidget {
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             AuthHeader(title: 'Sign in', topSpacing: Get.height * 0.05),
-            const SizedBox(height: 40),
+            SizedBox(height: 40.h),
             CustomTextField(
               hint: 'Email',
               controller: controller.loginEmailController,
               keyboardType: TextInputType.emailAddress,
               validator: Validators.email,
             ),
-            const SizedBox(height: 16),
+            SizedBox(height: 16.h),
             CustomTextField(
               hint: 'Password',
               controller: controller.loginPasswordController,
@@ -46,27 +47,27 @@ class LoginView extends StatelessWidget {
               ),
               validator: Validators.password,
             ),
-            const SizedBox(height: 44),
+            SizedBox(height: 44.h),
             PrimaryButton(
               text: 'Sign In',
               isLoading: controller.isLoading,
               onPressed: controller.login,
             ),
-            const SizedBox(height: 16),
+            SizedBox(height: 16.h),
             SecondaryButton(
               text: 'Create Account',
               onPressed:
                   onToggleToRegister ?? () => Get.toNamed(Routes.register),
             ),
-            const SizedBox(height: 16),
+            SizedBox(height: 16.h),
             TextButton(
               onPressed: () => Get.toNamed(Routes.forgotPassword),
               child: const Text('Forgot Password?'),
             ),
-            const SizedBox(height: 16),
+            SizedBox(height: 16.h),
             PlatformButton(
               text: 'Facebook',
-              icon: const Icon(Icons.facebook, color: Colors.blue, size: 36),
+              icon: Icon(Icons.facebook, color: Colors.blue, size: 36.sp),
               onPressed: () {
                 // Implement social login logic
               },

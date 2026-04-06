@@ -1,5 +1,6 @@
 import 'package:clot_ecommerce_app/core/constants/app_assets.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:get/get.dart';
 
 class CustomAppBar extends StatelessWidget implements PreferredSizeWidget {
@@ -29,42 +30,42 @@ class CustomAppBar extends StatelessWidget implements PreferredSizeWidget {
     final theme = Theme.of(context);
     final effectiveTitleColor = titleColor ?? theme.colorScheme.onSurface;
     final effectiveBackButtonColor =
-        backgroundColor ?? theme.colorScheme.surfaceVariant;
+        backgroundColor ?? theme.colorScheme.surfaceContainerHighest;
 
     return SafeArea(
       child: PreferredSize(
         preferredSize: preferredSize,
         child: Padding(
-          padding: const EdgeInsets.only(top: 14),
+          padding: EdgeInsets.only(top: 14.h),
           child: Row(
             children: [
               if (showBackButton)
                 GestureDetector(
                   onTap: () => Get.back(),
                   child: Container(
-                    height: 40,
-                    width: 40,
-                    margin: const EdgeInsets.only(left: 16),
-                    padding: const EdgeInsets.all(8),
+                    height: 40.h,
+                    width: 40.w,
+                    margin: EdgeInsets.only(left: 16.w),
+                    padding: EdgeInsets.all(8.r),
                     decoration: BoxDecoration(
                       color: effectiveBackButtonColor,
                       shape: BoxShape.circle,
                     ),
                     child: Image.asset(
                       AppAssets.backArrow,
-                      width: 24,
-                      height: 24,
+                      width: 24.w,
+                      height: 24.h,
                       color: effectiveTitleColor,
                     ),
                   ),
                 ),
-              SizedBox(width: showBackButton ? 16 : 0),
+              SizedBox(width: showBackButton ? 16.w : 0),
               if (title != null)
                 Text(
                   title!,
                   style: TextStyle(
                     color: effectiveTitleColor,
-                    fontSize: 18,
+                    fontSize: 18.sp,
                     fontWeight: FontWeight.w600,
                   ),
                 ),

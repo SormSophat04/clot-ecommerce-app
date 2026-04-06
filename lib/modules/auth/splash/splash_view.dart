@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:get/get.dart';
 import 'splash_controller.dart';
 
@@ -7,90 +8,93 @@ class SplashView extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    // Initialize controller and keep a reference
     final controller = Get.put(SplashController());
+    final theme = Theme.of(context);
+    final colorScheme = theme.colorScheme;
+    final inputFillColor =
+        theme.inputDecorationTheme.fillColor ?? colorScheme.surfaceContainerHighest;
 
     return Scaffold(
-      backgroundColor: Colors.white,
+      backgroundColor: colorScheme.surface,
       body: SafeArea(
         bottom: false,
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            const SizedBox(height: 60),
-            const Padding(
-              padding: EdgeInsets.symmetric(horizontal: 24.0),
+            SizedBox(height: 60.h),
+            Padding(
+              padding: EdgeInsets.symmetric(horizontal: 24.w),
               child: Text(
                 'Tell us About yourself',
                 style: TextStyle(
-                  fontSize: 27,
+                  fontSize: 27.sp,
                   fontWeight: FontWeight.bold,
-                  color: Colors.black,
+                  color: colorScheme.onSurface,
                   letterSpacing: -0.5,
                 ),
               ),
             ),
-            const SizedBox(height: 48),
-            const Padding(
-              padding: EdgeInsets.symmetric(horizontal: 24.0),
+            SizedBox(height: 48.h),
+            Padding(
+              padding: EdgeInsets.symmetric(horizontal: 24.w),
               child: Text(
                 'Who do you shop for ?',
                 style: TextStyle(
-                  fontSize: 16,
-                  color: Colors.black87,
+                  fontSize: 16.sp,
+                  color: colorScheme.onSurface,
                 ),
               ),
             ),
-            const SizedBox(height: 16),
+            SizedBox(height: 16.h),
             Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 24.0),
+              padding: EdgeInsets.symmetric(horizontal: 24.w),
               child: Obx(() => Row(
                 children: [
                   Expanded(
                     child: GestureDetector(
                       onTap: () => controller.setGender('Men'),
                       child: Container(
-                        height: 56,
+                        height: 56.h,
                         decoration: BoxDecoration(
                           color: controller.selectedGender.value == 'Men'
-                              ? const Color(0xFF8E6CEF)
-                              : const Color(0xFFF4F4F4),
-                          borderRadius: BorderRadius.circular(30),
+                              ? colorScheme.primary
+                              : inputFillColor,
+                          borderRadius: BorderRadius.circular(30.r),
                         ),
                         alignment: Alignment.center,
                         child: Text(
                           'Men',
                           style: TextStyle(
                             color: controller.selectedGender.value == 'Men'
-                                ? Colors.white
-                                : Colors.black,
-                            fontSize: 16,
+                                ? colorScheme.onPrimary
+                                : colorScheme.onSurface,
+                            fontSize: 16.sp,
                             fontWeight: FontWeight.w600,
                           ),
                         ),
                       ),
                     ),
                   ),
-                  const SizedBox(width: 16),
+                  SizedBox(width: 16.w),
                   Expanded(
                     child: GestureDetector(
                       onTap: () => controller.setGender('Women'),
                       child: Container(
-                        height: 56,
+                        height: 56.h,
                         decoration: BoxDecoration(
                           color: controller.selectedGender.value == 'Women'
-                              ? const Color(0xFF8E6CEF)
-                              : const Color(0xFFF4F4F4),
-                          borderRadius: BorderRadius.circular(30),
+                              ? colorScheme.primary
+                              : inputFillColor,
+                          borderRadius: BorderRadius.circular(30.r),
                         ),
                         alignment: Alignment.center,
                         child: Text(
                           'Women',
                           style: TextStyle(
                             color: controller.selectedGender.value == 'Women'
-                                ? Colors.white
-                                : Colors.black,
-                            fontSize: 16,
+                                ? colorScheme.onPrimary
+                                : colorScheme.onSurface,
+                            fontSize: 16.sp,
                             fontWeight: FontWeight.w600,
                           ),
                         ),
@@ -100,30 +104,30 @@ class SplashView extends StatelessWidget {
                 ],
               )),
             ),
-            const SizedBox(height: 48),
-            const Padding(
-              padding: EdgeInsets.symmetric(horizontal: 24.0),
+            SizedBox(height: 48.h),
+            Padding(
+              padding: EdgeInsets.symmetric(horizontal: 24.w),
               child: Text(
                 'How Old are you ?',
                 style: TextStyle(
-                  fontSize: 16,
-                  color: Colors.black87,
+                  fontSize: 16.sp,
+                  color: colorScheme.onSurface,
                 ),
               ),
             ),
-            const SizedBox(height: 16),
+            SizedBox(height: 16.h),
             Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 24.0),
+              padding: EdgeInsets.symmetric(horizontal: 24.w),
               child: GestureDetector(
                 onTap: () {
                   Get.bottomSheet(
                     Container(
-                      padding: const EdgeInsets.all(24),
-                      decoration: const BoxDecoration(
-                        color: Colors.white,
+                      padding: EdgeInsets.all(24.r),
+                      decoration: BoxDecoration(
+                        color: colorScheme.surface,
                         borderRadius: BorderRadius.only(
-                          topLeft: Radius.circular(30),
-                          topRight: Radius.circular(30),
+                          topLeft: Radius.circular(30.r),
+                          topRight: Radius.circular(30.r),
                         ),
                       ),
                       child: SafeArea(
@@ -132,23 +136,23 @@ class SplashView extends StatelessWidget {
                           children: [
                             // Drag Handle
                             Container(
-                              width: 40,
-                              height: 4,
+                              width: 40.w,
+                              height: 4.h,
                               decoration: BoxDecoration(
-                                color: Colors.grey[300],
-                                borderRadius: BorderRadius.circular(2),
+                                color: colorScheme.outline.withOpacity(0.4),
+                                borderRadius: BorderRadius.circular(2.r),
                               ),
                             ),
-                            const SizedBox(height: 24),
-                            const Text(
+                            SizedBox(height: 24.h),
+                            Text(
                               'How Old are you ?',
                               style: TextStyle(
-                                fontSize: 20,
+                                fontSize: 20.sp,
                                 fontWeight: FontWeight.bold,
-                                color: Colors.black,
+                                color: colorScheme.onSurface,
                               ),
                             ),
-                            const SizedBox(height: 24),
+                            SizedBox(height: 24.h),
                             Obx(() => Column(
                               children: controller.ageRanges.map((age) => GestureDetector(
                                 onTap: () {
@@ -157,23 +161,23 @@ class SplashView extends StatelessWidget {
                                 },
                                 child: Container(
                                   width: double.infinity,
-                                  padding: const EdgeInsets.symmetric(vertical: 16),
-                                  margin: const EdgeInsets.only(bottom: 12),
+                                  padding: EdgeInsets.symmetric(vertical: 16.h),
+                                  margin: EdgeInsets.only(bottom: 12.h),
                                   decoration: BoxDecoration(
                                     color: controller.selectedAgeRange.value == age
-                                        ? const Color(0xFF8E6CEF)
-                                        : const Color(0xFFF4F4F4),
-                                    borderRadius: BorderRadius.circular(30),
+                                        ? colorScheme.primary
+                                        : inputFillColor,
+                                    borderRadius: BorderRadius.circular(30.r),
                                   ),
                                   alignment: Alignment.center,
                                   child: Text(
                                     age,
                                     style: TextStyle(
-                                      fontSize: 16,
+                                      fontSize: 16.sp,
                                       fontWeight: FontWeight.w600,
                                       color: controller.selectedAgeRange.value == age
-                                          ? Colors.white
-                                          : Colors.black87,
+                                          ? colorScheme.onPrimary
+                                          : colorScheme.onSurface,
                                     ),
                                   ),
                                 ),
@@ -188,11 +192,11 @@ class SplashView extends StatelessWidget {
                   );
                 },
                 child: Container(
-                  height: 56,
-                  padding: const EdgeInsets.symmetric(horizontal: 20),
+                  height: 56.h,
+                  padding: EdgeInsets.symmetric(horizontal: 20.w),
                   decoration: BoxDecoration(
-                    color: const Color(0xFFF4F4F4),
-                    borderRadius: BorderRadius.circular(30),
+                    color: inputFillColor,
+                    borderRadius: BorderRadius.circular(30.r),
                   ),
                   child: Row(
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -200,15 +204,15 @@ class SplashView extends StatelessWidget {
                       Obx(() => Text(
                         controller.selectedAgeRange.value,
                         style: TextStyle(
-                          fontSize: 15,
+                          fontSize: 15.sp,
                           color: controller.selectedAgeRange.value == 'Age Range'
-                              ? Colors.black54
-                              : Colors.black87,
+                              ? colorScheme.onSurfaceVariant
+                              : colorScheme.onSurface,
                         ),
                       )),
-                      const Icon(
+                      Icon(
                         Icons.keyboard_arrow_down,
-                        color: Colors.black54,
+                        color: colorScheme.onSurfaceVariant,
                       ),
                     ],
                   ),
@@ -217,36 +221,36 @@ class SplashView extends StatelessWidget {
             ),
             const Spacer(),
             Container(
-              padding: const EdgeInsets.only(
-                left: 24,
-                right: 24,
-                top: 24,
-                bottom: 32,
+              padding: EdgeInsets.only(
+                left: 24.w,
+                right: 24.w,
+                top: 24.h,
+                bottom: 32.h,
               ),
-              decoration: const BoxDecoration(
-                color: Color(0xFFF4F4F4),
+              decoration: BoxDecoration(
+                color: inputFillColor,
               ),
               child: SafeArea(
                 top: false,
                 child: SizedBox(
                   width: double.infinity,
-                  height: 56,
+                  height: 56.h,
                   child: ElevatedButton(
                     onPressed: () {
                       Get.offAllNamed('/main-layout');
                     },
                     style: ElevatedButton.styleFrom(
-                      backgroundColor: const Color(0xFF8E6CEF),
-                      foregroundColor: Colors.white,
+                      backgroundColor: colorScheme.primary,
+                      foregroundColor: colorScheme.onPrimary,
                       shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(30),
+                        borderRadius: BorderRadius.circular(30.r),
                       ),
                       elevation: 0,
                     ),
-                    child: const Text(
+                    child: Text(
                       'Finish',
                       style: TextStyle(
-                        fontSize: 16,
+                        fontSize: 16.sp,
                         fontWeight: FontWeight.w600,
                       ),
                     ),

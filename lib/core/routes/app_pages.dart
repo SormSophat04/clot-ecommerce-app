@@ -117,6 +117,16 @@ abstract class AppPages {
       page: () => const AddAddressView(),
       binding: AddAddressBinding(),
     ),
+    GetPage(
+      name: Routes.payment,
+      page: () => const PaymentView(),
+      binding: PaymentBinding(),
+    ),
+    GetPage(
+      name: Routes.addCard,
+      page: () => const AddCardView(),
+      binding: AddCardBinding(),
+    ),
 
     // Search Module
     GetPage(

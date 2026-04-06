@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_screenutil/flutter_screenutil.dart';
 
 class AuthHeader extends StatelessWidget {
   const AuthHeader({
@@ -20,12 +21,22 @@ class AuthHeader extends StatelessWidget {
         if (topSpacing != null) SizedBox(height: topSpacing),
         Text(
           title,
-          style: const TextStyle(fontSize: 28, fontWeight: FontWeight.bold),
+          style: TextStyle(
+            fontSize: 28.sp,
+            fontWeight: FontWeight.bold,
+            color: Theme.of(context).colorScheme.onSurface,
+          ),
           textAlign: TextAlign.center,
         ),
         if (subtitle != null) ...[
-          const SizedBox(height: 16),
-          Text(subtitle!, style: const TextStyle(fontSize: 14)),
+          SizedBox(height: 16.h),
+          Text(
+            subtitle!,
+            style: TextStyle(
+              fontSize: 14.sp,
+              color: Theme.of(context).colorScheme.onSurfaceVariant,
+            ),
+          ),
         ],
       ],
     );

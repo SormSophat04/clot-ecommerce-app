@@ -1,7 +1,7 @@
 import 'package:clot_ecommerce_app/core/constants/app_assets.dart';
-import 'package:clot_ecommerce_app/core/constants/app_colors.dart';
 import 'package:clot_ecommerce_app/core/routes/app_routes.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:get/get.dart';
 
 class ProductView extends StatefulWidget {
@@ -67,7 +67,7 @@ class _ProductViewState extends State<ProductView> {
     final colors = theme.colorScheme;
     final textTheme = theme.textTheme;
     final surfaceMuted =
-        theme.inputDecorationTheme.fillColor ?? AppColors.backgroundColor2;
+        theme.inputDecorationTheme.fillColor ?? colors.surfaceContainerHighest;
 
     return Scaffold(
       backgroundColor: theme.scaffoldBackgroundColor,
@@ -75,9 +75,9 @@ class _ProductViewState extends State<ProductView> {
         backgroundColor: colors.surface,
         elevation: 0,
         scrolledUnderElevation: 0,
-        leadingWidth: 56,
+        leadingWidth: 56.w,
         leading: Padding(
-          padding: const EdgeInsets.only(left: 16, top: 8, bottom: 8),
+          padding: EdgeInsets.only(left: 16.w, top: 8.h, bottom: 8.h),
           child: GestureDetector(
             onTap: Get.back,
             child: Container(
@@ -85,7 +85,7 @@ class _ProductViewState extends State<ProductView> {
                 color: surfaceMuted,
                 shape: BoxShape.circle,
               ),
-              padding: const EdgeInsets.all(10),
+              padding: EdgeInsets.all(10.r),
               child: Image.asset(AppAssets.backArrow, color: colors.onSurface),
             ),
           ),
@@ -94,7 +94,7 @@ class _ProductViewState extends State<ProductView> {
           'All Products',
           style: textTheme.titleLarge?.copyWith(
             fontWeight: FontWeight.bold,
-            fontSize: 20,
+            fontSize: 20.sp,
             color: colors.onSurface,
           ),
         ),
@@ -102,27 +102,27 @@ class _ProductViewState extends State<ProductView> {
       body: SafeArea(
         top: false,
         child: Padding(
-          padding: const EdgeInsets.fromLTRB(16, 12, 16, 0),
+          padding: EdgeInsets.fromLTRB(16.w, 12.h, 16.w, 0),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               Text(
                 '${_products.length} Items',
                 style: textTheme.bodyMedium?.copyWith(
-                  fontSize: 14,
+                  fontSize: 14.sp,
                   color: colors.onSurfaceVariant,
                 ),
               ),
-              const SizedBox(height: 16),
+              SizedBox(height: 16.h),
               Expanded(
                 child: GridView.builder(
                   physics: const BouncingScrollPhysics(),
-                  padding: const EdgeInsets.only(bottom: 24),
+                  padding: EdgeInsets.only(bottom: 24.h),
                   itemCount: _products.length,
-                  gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+                  gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
                     crossAxisCount: 2,
-                    mainAxisSpacing: 16,
-                    crossAxisSpacing: 14,
+                    mainAxisSpacing: 16.h,
+                    crossAxisSpacing: 14.w,
                     childAspectRatio: 0.54,
                   ),
                   itemBuilder: (context, index) {
@@ -169,10 +169,10 @@ class _ProductGridCard extends StatelessWidget {
     return GestureDetector(
       onTap: () => Get.toNamed(Routes.productDetails),
       child: Container(
-        // padding: const EdgeInsets.all(10),
+        // padding: EdgeInsets.all(10.r),
         decoration: BoxDecoration(
           // color: mutedSurface,
-          borderRadius: BorderRadius.circular(22),
+          borderRadius: BorderRadius.circular(22.r),
         ),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
@@ -184,24 +184,24 @@ class _ProductGridCard extends StatelessWidget {
                     width: double.infinity,
                     decoration: BoxDecoration(
                       color: product.imageColor,
-                      borderRadius: BorderRadius.circular(18),
+                      borderRadius: BorderRadius.circular(18.r),
                     ),
-                    child: const Center(
+                    child: Center(
                       child: Icon(
                         Icons.image_rounded,
-                        size: 46,
-                        color: Color.fromRGBO(255, 255, 255, 0.75),
+                        size: 46.sp,
+                        color: const Color.fromRGBO(255, 255, 255, 0.75),
                       ),
                     ),
                   ),
                   Positioned(
-                    top: 8,
-                    right: 8,
+                    top: 8.h,
+                    right: 8.w,
                     child: GestureDetector(
                       onTap: onWishlistTap,
                       child: Container(
-                        width: 32,
-                        height: 32,
+                        width: 32.w,
+                        height: 32.h,
                         decoration: BoxDecoration(
                           color: colors.surface,
                           shape: BoxShape.circle,
@@ -216,11 +216,11 @@ class _ProductGridCard extends StatelessWidget {
                         child: Center(
                           child: Image.asset(
                             AppAssets.heart,
-                            width: 16,
-                            height: 16,
+                            width: 16.w,
+                            height: 16.h,
                             color: isWishlisted
-                                ? AppColors.primaryColor
-                                : const Color(0xFFAAAAAA),
+                                ? colors.primary
+                                : colors.onSurfaceVariant,
                           ),
                         ),
                       ),
@@ -229,34 +229,34 @@ class _ProductGridCard extends StatelessWidget {
                 ],
               ),
             ),
-            const SizedBox(height: 10),
+            SizedBox(height: 10.h),
             Text(
               product.name,
               style: textTheme.bodyMedium?.copyWith(
-                fontSize: 13,
+                fontSize: 13.sp,
                 fontWeight: FontWeight.w500,
                 color: colors.onSurface,
               ),
               maxLines: 1,
               overflow: TextOverflow.ellipsis,
             ),
-            const SizedBox(height: 4),
+            SizedBox(height: 4.h),
             Row(
               children: [
                 Text(
                   product.price,
                   style: textTheme.bodyMedium?.copyWith(
-                    fontSize: 14,
+                    fontSize: 14.sp,
                     fontWeight: FontWeight.bold,
                     color: colors.onSurface,
                   ),
                 ),
                 if (product.oldPrice != null) ...[
-                  const SizedBox(width: 6),
+                  SizedBox(width: 6.w),
                   Text(
                     product.oldPrice!,
                     style: textTheme.bodySmall?.copyWith(
-                      fontSize: 12,
+                      fontSize: 12.sp,
                       color: colors.onSurfaceVariant,
                       decoration: TextDecoration.lineThrough,
                     ),

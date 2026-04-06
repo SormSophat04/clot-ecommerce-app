@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:flutter_screenutil/flutter_screenutil.dart';
 
 class CustomTextField extends StatelessWidget {
   final String? label;
@@ -53,9 +54,9 @@ class CustomTextField extends StatelessWidget {
         if (label != null)
           Text(
             label!,
-            style: const TextStyle(fontSize: 14, fontWeight: FontWeight.w500),
+            style: TextStyle(fontSize: 14.sp, fontWeight: FontWeight.w500),
           ),
-        const SizedBox(height: 8),
+        SizedBox(height: 8.h),
         TextFormField(
           controller: controller,
           initialValue: initialValue,
@@ -77,8 +78,8 @@ class CustomTextField extends StatelessWidget {
             prefixIcon: prefixIcon,
             suffixIcon: suffixIcon,
             hintStyle: TextStyle(
-              color: Colors.grey.shade400,
-              fontSize: 14,
+              color: Theme.of(context).colorScheme.onSurfaceVariant,
+              fontSize: 14.sp,
               fontWeight: FontWeight.w500,
             ),
           ),

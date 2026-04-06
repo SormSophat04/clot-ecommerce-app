@@ -7,6 +7,7 @@ import 'package:clot_ecommerce_app/core/widgets/custom_buttons/secondary_button.
 import 'package:clot_ecommerce_app/core/widgets/custom_inputs/custom_text_field.dart';
 import 'package:clot_ecommerce_app/modules/auth/auth_controller/auth_controller.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:get/get.dart';
 
 class RegisterView extends StatelessWidget {
@@ -26,28 +27,28 @@ class RegisterView extends StatelessWidget {
               title: 'Create an account',
               topSpacing: Get.height * 0.05,
             ),
-            const SizedBox(height: 40),
+            SizedBox(height: 40.h),
             CustomTextField(
               hint: 'Name',
               controller: controller.signUpNameController,
               keyboardType: TextInputType.text,
               validator: Validators.name,
             ),
-            const SizedBox(height: 16),
+            SizedBox(height: 16.h),
             CustomTextField(
               hint: 'Phone number',
               controller: controller.signUpPhoneController,
               keyboardType: TextInputType.phone,
               validator: Validators.phone,
             ),
-            const SizedBox(height: 16),
+            SizedBox(height: 16.h),
             CustomTextField(
               hint: 'Email',
               controller: controller.signUpEmailController,
               keyboardType: TextInputType.emailAddress,
               validator: Validators.email,
             ),
-            const SizedBox(height: 16),
+            SizedBox(height: 16.h),
             CustomTextField(
               hint: 'Password',
               controller: controller.signUpPasswordController,
@@ -62,18 +63,18 @@ class RegisterView extends StatelessWidget {
               ),
               validator: Validators.password,
             ),
-            const SizedBox(height: 44),
+            SizedBox(height: 44.h),
             PrimaryButton(
               text: 'Sign Up',
               isLoading: controller.isLoading,
               onPressed: controller.signUp,
             ),
-            const SizedBox(height: 16),
+            SizedBox(height: 16.h),
             SecondaryButton(
               text: 'Login',
               onPressed: onToggleToLogin ?? () => Get.toNamed(Routes.login),
             ),
-            const SizedBox(height: 16),
+            SizedBox(height: 16.h),
           ],
         ),
       ),

@@ -1,127 +1,89 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:get/get.dart';
 import '../../../core/constants/app_assets.dart';
-import '../../../core/constants/app_colors.dart';
+import 'product_details_controller.dart';
 
-class ProductDetailsView extends StatefulWidget {
+class ProductDetailsView extends GetView<ProductDetailsController> {
   const ProductDetailsView({super.key});
 
-  @override
-  State<ProductDetailsView> createState() => _ProductDetailsViewState();
-}
-
-class _ProductDetailsViewState extends State<ProductDetailsView> {
-  static const String _productName = "Men's Harrington Jacket";
-  static const String _priceLabel = '\$148';
-  static const String _description =
-      'Built for life and made to last, this full-zip corduroy jacket is '
-      'part of our Nike Life collection. The spacious fit gives you room '
-      'to layer through every season.';
-
-  static const List<String> _sizes = <String>['XS', 'S', 'M', 'L', 'XL'];
-  static const List<Color> _colorOptions = <Color>[
-    Color(0xFFA9AF86),
-    Color(0xFF767C56),
-    Color(0xFF3A3C44),
-  ];
-  static const List<Color> _galleryColors = <Color>[
-    Color(0xFFB8C49D),
-    Color(0xFFA3B183),
-    Color(0xFF9BAE7C),
-  ];
-
-  String _selectedSize = 'S';
-  int _selectedColorIndex = 0;
-  int _quantity = 1;
-  bool _isWishlisted = false;
-
-  void _updateQuantity(int delta) {
-    setState(() {
-      _quantity = (_quantity + delta).clamp(1, 99);
-    });
-  }
-
   Future<void> _showSizePicker(BuildContext context) async {
-    final theme = Theme.of(context);
     final selectedSize = await showModalBottomSheet<String>(
       context: context,
-      backgroundColor: theme.colorScheme.surface,
-      showDragHandle: true,
+      backgroundColor: Colors.transparent,
+      isScrollControlled: true,
       builder: (context) {
-        return SafeArea(
-          top: false,
-          child: Padding(
-            padding: const EdgeInsets.fromLTRB(20, 8, 20, 20),
-            child: Wrap(
-              spacing: 10,
-              runSpacing: 10,
-              children: _sizes
-                  .map(
-                    (size) => ChoiceChip(
-                      label: Text(size),
-                      selected: _selectedSize == size,
-                      onSelected: (_) => Navigator.of(context).pop(size),
-                    ),
-                  )
-                  .toList(),
-            ),
+        return _PickerSheet(
+          title: 'Size',
+          child: ListView.separated(
+            shrinkWrap: true,
+            itemCount: ProductDetailsController.sizes.length,
+            separatorBuilder: (_, _) => const SizedBox(height: 12),
+            itemBuilder: (context, index) {
+              final size = ProductDetailsController.sizes[index];
+              return Obx(() => _PickerOptionTile(
+                    label: size,
+                    selected: size == controller.selectedSize.value,
+                    onTap: () => Navigator.of(context).pop(size),
+                  ));
+            },
           ),
+          onClose: () => Navigator.of(context).pop(),
         );
       },
     );
 
-    if (selectedSize != null && mounted) {
-      setState(() => _selectedSize = selectedSize);
+    if (selectedSize != null) {
+      controller.selectSize(selectedSize);
     }
   }
 
   Future<void> _showColorPicker(BuildContext context) async {
-    final theme = Theme.of(context);
-    final selectedColor = await showModalBottomSheet<int>(
+    final selectedColorIndex = await showModalBottomSheet<int>(
       context: context,
-      backgroundColor: theme.colorScheme.surface,
-      showDragHandle: true,
+      backgroundColor: Colors.transparent,
+      isScrollControlled: true,
       builder: (context) {
-        return SafeArea(
-          top: false,
-          child: Padding(
-            padding: const EdgeInsets.fromLTRB(20, 8, 20, 20),
-            child: Wrap(
-              spacing: 12,
-              runSpacing: 12,
-              children: List.generate(_colorOptions.length, (index) {
-                final isSelected = _selectedColorIndex == index;
-                return InkWell(
+        return _PickerSheet(
+          title: 'Color',
+          child: ListView.separated(
+            shrinkWrap: true,
+            itemCount: ProductDetailsController.colorOptions.length,
+            separatorBuilder: (_, _) => const SizedBox(height: 12),
+            itemBuilder: (context, index) {
+              final option = ProductDetailsController.colorOptions[index];
+              return Obx(() {
+                final isSelected = controller.selectedColorIndex.value == index;
+
+                return _PickerOptionTile(
+                  label: option.name,
+                  selected: isSelected,
                   onTap: () => Navigator.of(context).pop(index),
-                  borderRadius: BorderRadius.circular(22),
-                  child: AnimatedContainer(
-                    duration: const Duration(milliseconds: 180),
-                    width: 42,
-                    height: 42,
+                  trailing: Container(
+                    width: 22,
+                    height: 22,
                     decoration: BoxDecoration(
                       shape: BoxShape.circle,
-                      color: _colorOptions[index],
+                      color: option.color,
                       border: Border.all(
                         color: isSelected
-                            ? theme.colorScheme.primary
+                            ? Colors.white.withValues(alpha: 0.8)
                             : Colors.transparent,
                         width: 2,
                       ),
                     ),
-                    child: isSelected
-                        ? const Icon(Icons.check, color: Colors.white, size: 16)
-                        : null,
                   ),
                 );
-              }),
-            ),
+              });
+            },
           ),
+          onClose: () => Navigator.of(context).pop(),
         );
       },
     );
 
-    if (selectedColor != null && mounted) {
-      setState(() => _selectedColorIndex = selectedColor);
+    if (selectedColorIndex != null) {
+      controller.selectColor(selectedColorIndex);
     }
   }
 
@@ -132,225 +94,360 @@ class _ProductDetailsViewState extends State<ProductDetailsView> {
     final textTheme = theme.textTheme;
     final isDark = theme.brightness == Brightness.dark;
 
-    final shellBackground = isDark
-        ? const Color(0xFF16171D)
-        : const Color(0xFFD5D5D5);
-    final panelSurface = isDark
-        ? const Color(0xFF20222B)
-        : const Color(0xFFF7F7F7);
-    final mutedSurface = isDark
-        ? const Color(0xFF2D2F39)
-        : const Color(0xFFECECEE);
-    final mutedText = isDark
-        ? colorScheme.onSurfaceVariant
-        : const Color(0xFF8B8B90);
+    final shellBackground =
+        isDark ? const Color(0xFF16171D) : const Color(0xFFD5D5D5);
+    final mutedSurface =
+        isDark ? const Color(0xFF2D2F39) : const Color(0xFFECECEE);
+    final mutedText =
+        isDark ? colorScheme.onSurfaceVariant : const Color(0xFF8B8B90);
     final buttonGradient = <Color>[
-      AppColors.primaryColor,
-      const Color(0xFF7A5ADE),
+      colorScheme.primary,
+      isDark ? colorScheme.primary.withOpacity(0.8) : const Color(0xFF7A5ADE),
     ];
 
     return Scaffold(
       backgroundColor: shellBackground,
       body: SafeArea(
         child: Center(
-          child: Container(
-            padding: const EdgeInsets.fromLTRB(18, 20, 18, 10),
-            child: Column(
-              children: [
-                Row(
+          child: Column(
+            children: [
+              Padding(
+                padding: EdgeInsets.symmetric(horizontal: 16.w),
+                child: Row(
                   children: [
                     _RoundIconAction(
                       onTap: Get.back,
                       backgroundColor: mutedSurface,
                       icon: Image.asset(
                         AppAssets.backArrow,
-                        width: 18,
+                        width: 18.w,
                         color: colorScheme.onSurface,
                       ),
                     ),
                     const Spacer(),
-                    _RoundIconAction(
-                      onTap: () =>
-                          setState(() => _isWishlisted = !_isWishlisted),
-                      backgroundColor: mutedSurface,
-                      icon: Image.asset(
-                        AppAssets.heart,
-                        width: 18,
-                        color: _isWishlisted
-                            ? AppColors.primaryColor
-                            : colorScheme.onSurface,
-                      ),
-                    ),
+                    Obx(() => _RoundIconAction(
+                          onTap: controller.toggleWishlist,
+                          backgroundColor: mutedSurface,
+                          icon: Image.asset(
+                            AppAssets.heart,
+                            width: 18.w,
+                            color: controller.isWishlisted.value
+                                ? colorScheme.primary
+                                : colorScheme.onSurface,
+                          ),
+                        )),
                   ],
                 ),
-                const SizedBox(height: 18),
-                Expanded(
-                  child: SingleChildScrollView(
-                    physics: const BouncingScrollPhysics(),
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        SizedBox(
-                          height: 252,
-                          child: ListView.separated(
-                            physics: const BouncingScrollPhysics(),
-                            scrollDirection: Axis.horizontal,
-                            itemCount: _galleryColors.length,
-                            separatorBuilder: (_, _) =>
-                                const SizedBox(width: 10),
-                            itemBuilder: (context, index) =>
-                                _GalleryCard(tint: _galleryColors[index]),
-                          ),
-                        ),
-                        const SizedBox(height: 18),
-                        Text(
-                          _productName,
+              ),
+                      SizedBox(height: 18.h),
+                      Expanded(
+                        child: SingleChildScrollView(
+                          physics: const BouncingScrollPhysics(),
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              SizedBox(
+                                height: 380.h,
+                                child: ListView.separated(
+                                  physics: const BouncingScrollPhysics(),
+                                  scrollDirection: Axis.horizontal,
+                                  padding: EdgeInsets.symmetric(horizontal: 16.w),
+                                  itemCount: ProductDetailsController.galleryColors.length,
+                                  separatorBuilder: (_, _) => SizedBox(width: 10.w),
+                                  itemBuilder: (context, index) => _GalleryCard(
+                                      tint:
+                                          ProductDetailsController.galleryColors[index]),
+                                ),
+                              ),
+                              SizedBox(height: 18.h),
+                      Padding(
+                        padding: EdgeInsets.symmetric(horizontal: 16.w),
+                        child: Text(
+                          ProductDetailsController.productName,
                           style: textTheme.titleLarge?.copyWith(
-                            fontSize: 24,
+                            fontSize: 24.sp,
                             fontWeight: FontWeight.w800,
                             color: colorScheme.onSurface,
                             height: 1.1,
                           ),
                         ),
-                        const SizedBox(height: 8),
-                        Text(
-                          _priceLabel,
+                      ),
+                      SizedBox(height: 8.h),
+                      Padding(
+                        padding: EdgeInsets.symmetric(horizontal: 16.w),
+                        child: Text(
+                          ProductDetailsController.priceLabel,
                           style: textTheme.headlineSmall?.copyWith(
-                            color: AppColors.primaryColor,
-                            fontSize: 24,
+                            color: colorScheme.primary,
+                            fontSize: 24.sp,
                             fontWeight: FontWeight.w800,
                           ),
                         ),
-                        const SizedBox(height: 20),
-                        _OptionTile(
-                          label: 'Size',
-                          backgroundColor: mutedSurface,
-                          trailing: InkWell(
-                            onTap: () => _showSizePicker(context),
-                            borderRadius: BorderRadius.circular(20),
-                            child: Padding(
-                              padding: const EdgeInsets.symmetric(vertical: 2),
-                              child: Row(
-                                mainAxisSize: MainAxisSize.min,
-                                children: [
-                                  Text(
-                                    _selectedSize,
-                                    style: textTheme.titleMedium?.copyWith(
-                                      fontWeight: FontWeight.w700,
-                                      color: colorScheme.onSurface,
-                                    ),
-                                  ),
-                                  const SizedBox(width: 10),
-                                  Icon(
-                                    Icons.keyboard_arrow_down_rounded,
-                                    color: colorScheme.onSurface,
-                                  ),
-                                ],
-                              ),
-                            ),
-                          ),
-                        ),
-                        const SizedBox(height: 12),
-                        _OptionTile(
-                          label: 'Color',
-                          backgroundColor: mutedSurface,
-                          trailing: InkWell(
-                            onTap: () => _showColorPicker(context),
-                            borderRadius: BorderRadius.circular(20),
-                            child: Padding(
-                              padding: const EdgeInsets.symmetric(vertical: 2),
-                              child: Row(
-                                mainAxisSize: MainAxisSize.min,
-                                children: [
-                                  Container(
-                                    width: 20,
-                                    height: 20,
-                                    decoration: BoxDecoration(
-                                      shape: BoxShape.circle,
-                                      color: _colorOptions[_selectedColorIndex],
-                                      border: Border.all(
-                                        color: colorScheme.outline.withValues(
-                                          alpha: 0.35,
-                                        ),
+                      ),
+                      SizedBox(height: 20.h),
+                      _OptionTile(
+                        label: 'Size',
+                        backgroundColor: mutedSurface,
+                        trailing: InkWell(
+                          onTap: () => _showSizePicker(context),
+                          borderRadius: BorderRadius.circular(20.r),
+                          child: Padding(
+                            padding: EdgeInsets.symmetric(vertical: 2.h),
+                            child: Row(
+                              mainAxisSize: MainAxisSize.min,
+                              children: [
+                                Obx(() => Text(
+                                      controller.selectedSize.value,
+                                      style: textTheme.titleMedium?.copyWith(
+                                        fontWeight: FontWeight.w700,
+                                        color: colorScheme.onSurface,
                                       ),
-                                    ),
-                                  ),
-                                  const SizedBox(width: 10),
-                                  Icon(
-                                    Icons.keyboard_arrow_down_rounded,
-                                    color: colorScheme.onSurface,
-                                  ),
-                                ],
-                              ),
-                            ),
-                          ),
-                        ),
-                        const SizedBox(height: 12),
-                        _OptionTile(
-                          label: 'Quantity',
-                          backgroundColor: mutedSurface,
-                          trailing: Row(
-                            mainAxisSize: MainAxisSize.min,
-                            children: [
-                              _QuantityAction(
-                                icon: Icons.add,
-                                onTap: () => _updateQuantity(1),
-                              ),
-                              const SizedBox(width: 12),
-                              Text(
-                                '$_quantity',
-                                style: textTheme.titleMedium?.copyWith(
-                                  fontWeight: FontWeight.w700,
+                                    )),
+                                SizedBox(width: 10.w),
+                                Icon(
+                                  Icons.keyboard_arrow_down_rounded,
                                   color: colorScheme.onSurface,
                                 ),
-                              ),
-                              const SizedBox(width: 12),
-                              _QuantityAction(
-                                icon: Icons.remove,
-                                onTap: () => _updateQuantity(-1),
-                              ),
-                            ],
+                              ],
+                            ),
                           ),
                         ),
-                        const SizedBox(height: 18),
-                        Text(
-                          _description,
+                      ),
+                      SizedBox(height: 12.h),
+                      _OptionTile(
+                        label: 'Color',
+                        backgroundColor: mutedSurface,
+                        trailing: InkWell(
+                          onTap: () => _showColorPicker(context),
+                          borderRadius: BorderRadius.circular(20.r),
+                          child: Padding(
+                            padding: EdgeInsets.symmetric(vertical: 2.h),
+                            child: Row(
+                              mainAxisSize: MainAxisSize.min,
+                              children: [
+                                Obx(() => Text(
+                                      ProductDetailsController
+                                          .colorOptions[controller
+                                              .selectedColorIndex.value]
+                                          .name,
+                                      style: textTheme.titleMedium?.copyWith(
+                                        fontWeight: FontWeight.w700,
+                                        color: colorScheme.onSurface,
+                                      ),
+                                    )),
+                                SizedBox(width: 8.w),
+                                Obx(() => Container(
+                                      width: 20.w,
+                                      height: 20.h,
+                                      decoration: BoxDecoration(
+                                        shape: BoxShape.circle,
+                                        color: ProductDetailsController
+                                            .colorOptions[controller
+                                                .selectedColorIndex.value]
+                                            .color,
+                                        border: Border.all(
+                                          color: colorScheme.outline.withValues(
+                                            alpha: 0.35,
+                                          ),
+                                        ),
+                                      ),
+                                    )),
+                                SizedBox(width: 10.w),
+                                Icon(
+                                  Icons.keyboard_arrow_down_rounded,
+                                  color: colorScheme.onSurface,
+                                ),
+                              ],
+                            ),
+                          ),
+                        ),
+                      ),
+                      SizedBox(height: 12.h),
+                      _OptionTile(
+                        label: 'Quantity',
+                        backgroundColor: mutedSurface,
+                        trailing: Row(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            _QuantityAction(
+                              icon: Icons.remove,
+                              onTap: () => controller.updateQuantity(-1),
+                            ),
+                            SizedBox(width: 12.w),
+                            Obx(() => Text(
+                                  '${controller.quantity.value}',
+                                  style: textTheme.titleMedium?.copyWith(
+                                    fontWeight: FontWeight.w700,
+                                    color: colorScheme.onSurface,
+                                  ),
+                                )),
+                            SizedBox(width: 12.w),
+                            _QuantityAction(
+                              icon: Icons.add,
+                              onTap: () => controller.updateQuantity(1),
+                            ),
+                          ],
+                        ),
+                      ),
+                      SizedBox(height: 18.h),
+                      Padding(
+                        padding: EdgeInsets.symmetric(horizontal: 16.w),
+                        child: Text(
+                          ProductDetailsController.description,
                           style: textTheme.bodyMedium?.copyWith(
-                            fontSize: 15,
+                            fontSize: 15.sp,
                             color: mutedText,
                             height: 1.5,
                           ),
                         ),
-                      ],
+                      ),
+                    ],
+                  ),
+                ),
+              ),
+              SizedBox(height: 14.h),
+              _AddToBagButton(
+                priceLabel: ProductDetailsController.priceLabel,
+                gradient: buttonGradient,
+                onTap: controller.addToBag,
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+class _PickerSheet extends StatelessWidget {
+  const _PickerSheet({
+    required this.title,
+    required this.child,
+    required this.onClose,
+  });
+
+  final String title;
+  final Widget child;
+  final VoidCallback onClose;
+
+  @override
+  Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    final colorScheme = theme.colorScheme;
+    final isDark = theme.brightness == Brightness.dark;
+    final surface = isDark
+        ? const Color(0xFF20222B)
+        : const Color(0xFFF7F7F7);
+
+    return Container(
+      constraints: BoxConstraints(
+        maxHeight: MediaQuery.of(context).size.height * 0.8,
+      ),
+      decoration: BoxDecoration(
+        color: surface,
+        borderRadius: const BorderRadius.vertical(top: Radius.circular(28)),
+      ),
+      child: SafeArea(
+        top: false,
+        child: Padding(
+          padding: EdgeInsets.fromLTRB(16.w, 14.h, 16.w, 20.h),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Row(
+                children: [
+                  const SizedBox(width: 40),
+                  Expanded(
+                    child: Text(
+                      title,
+                      textAlign: TextAlign.center,
+                      style: theme.textTheme.headlineSmall?.copyWith(
+                        fontWeight: FontWeight.w700,
+                        color: colorScheme.onSurface,
+                      ),
                     ),
                   ),
-                ),
-                const SizedBox(height: 14),
-                _AddToBagButton(
-                  priceLabel: _priceLabel,
-                  gradient: buttonGradient,
-                  onTap: () {
-                    final itemText = _quantity > 1 ? 'items' : 'item';
-                    ScaffoldMessenger.of(context).showSnackBar(
-                      SnackBar(
-                        content: Text(
-                          'Added $_quantity $itemText ($_selectedSize) to bag.',
-                        ),
+                  Material(
+                    color: Colors.transparent,
+                    child: InkWell(
+                      onTap: onClose,
+                      customBorder: const CircleBorder(),
+                      child: Ink(
+                        width: 40.w,
+                        height: 40.h,
+                        child: Icon(Icons.close_rounded, color: colorScheme.onSurface),
                       ),
-                    );
-                  },
-                ),
-                const SizedBox(height: 10),
-                Container(
-                  width: 118,
-                  height: 4,
-                  decoration: BoxDecoration(
-                    color: colorScheme.onSurface.withValues(alpha: 0.85),
-                    borderRadius: BorderRadius.circular(999),
+                    ),
                   ),
+                ],
+              ),
+              SizedBox(height: 12.h),
+              Flexible(child: child),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+class _PickerOptionTile extends StatelessWidget {
+  const _PickerOptionTile({
+    required this.label,
+    required this.selected,
+    required this.onTap,
+    this.trailing,
+  });
+
+  final String label;
+  final bool selected;
+  final VoidCallback onTap;
+  final Widget? trailing;
+
+  @override
+  Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    final colorScheme = theme.colorScheme;
+    final isDark = theme.brightness == Brightness.dark;
+    final unselectedColor = isDark ? const Color(0xFF2D2F39) : const Color(0xFFECECEE);
+
+    return Material(
+      color: Colors.transparent,
+      child: InkWell(
+        onTap: onTap,
+        borderRadius: BorderRadius.circular(30.r),
+        child: Ink(
+          height: 56.h,
+          padding: EdgeInsets.symmetric(horizontal: 24.w),
+          decoration: BoxDecoration(
+            borderRadius: BorderRadius.circular(30.r),
+            color: selected ? null : unselectedColor,
+            gradient: selected
+                ? LinearGradient(
+                    colors: <Color>[
+                      colorScheme.primary,
+                      isDark ? colorScheme.primary.withOpacity(0.8) : const Color(0xFF7A5ADE),
+                    ],
+                  )
+                : null,
+          ),
+          child: Row(
+            children: [
+              Expanded(
+                child: Text(
+                  label,
+                  style: theme.textTheme.titleLarge?.copyWith(
+                        fontWeight: FontWeight.w600,
+                        color: selected ? colorScheme.onPrimary : colorScheme.onSurface,
+                      ),
                 ),
+              ),
+              if (trailing != null) trailing!,
+              if (selected) ...[
+                if (trailing != null) SizedBox(width: 14.w),
+                Icon(Icons.check_rounded, color: colorScheme.onPrimary, size: 24.sp),
               ],
-            ),
+            ],
           ),
         ),
       ),
@@ -377,8 +474,8 @@ class _RoundIconAction extends StatelessWidget {
         onTap: onTap,
         customBorder: const CircleBorder(),
         child: Ink(
-          width: 42,
-          height: 42,
+          width: 42.w,
+          height: 42.h,
           decoration: BoxDecoration(
             color: backgroundColor,
             shape: BoxShape.circle,
@@ -398,9 +495,9 @@ class _GalleryCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return ClipRRect(
-      borderRadius: BorderRadius.circular(14),
+      borderRadius: BorderRadius.circular(14.r),
       child: Container(
-        width: 166,
+        width: 260.w,
         decoration: BoxDecoration(
           gradient: LinearGradient(
             begin: Alignment.topCenter,
@@ -414,11 +511,11 @@ class _GalleryCard extends StatelessWidget {
         child: Stack(
           children: [
             Positioned(
-              bottom: -54,
-              left: -30,
-              right: -30,
+              bottom: -54.h,
+              left: -30.w,
+              right: -30.w,
               child: Container(
-                height: 170,
+                height: 170.h,
                 decoration: BoxDecoration(
                   shape: BoxShape.circle,
                   color: Colors.white.withValues(alpha: 0.26),
@@ -426,20 +523,20 @@ class _GalleryCard extends StatelessWidget {
               ),
             ),
             Positioned(
-              top: 14,
-              right: 12,
+              top: 14.h,
+              right: 12.w,
               child: ColorFiltered(
                 colorFilter: ColorFilter.mode(
                   Colors.white.withValues(alpha: 0.92),
                   BlendMode.srcIn,
                 ),
-                child: Image.asset(AppAssets.logo, width: 23, height: 23),
+                child: Image.asset(AppAssets.logo, width: 23.w, height: 23.h),
               ),
             ),
             Center(
               child: Icon(
                 Icons.checkroom_rounded,
-                size: 86,
+                size: 86.sp,
                 color: Colors.white.withValues(alpha: 0.82),
               ),
             ),
@@ -467,10 +564,11 @@ class _OptionTile extends StatelessWidget {
     final onSurface = Theme.of(context).colorScheme.onSurface;
 
     return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+      padding: EdgeInsets.symmetric(horizontal: 16.w, vertical: 12.h),
+      margin: EdgeInsets.symmetric(horizontal: 16.w),
       decoration: BoxDecoration(
         color: backgroundColor,
-        borderRadius: BorderRadius.circular(22),
+        borderRadius: BorderRadius.circular(22.r),
       ),
       child: Row(
         children: [
@@ -497,19 +595,21 @@ class _QuantityAction extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final colorScheme = Theme.of(context).colorScheme;
+
     return Material(
       color: Colors.transparent,
       child: InkWell(
         onTap: onTap,
         customBorder: const CircleBorder(),
         child: Ink(
-          width: 42,
-          height: 42,
-          decoration: const BoxDecoration(
-            color: AppColors.primaryColor,
+          width: 42.w,
+          height: 42.h,
+          decoration: BoxDecoration(
+            color: colorScheme.primary,
             shape: BoxShape.circle,
           ),
-          child: Icon(icon, color: Colors.white, size: 20),
+          child: Icon(icon, color: colorScheme.onPrimary, size: 20.sp),
         ),
       ),
     );
@@ -530,27 +630,29 @@ class _AddToBagButton extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final textTheme = Theme.of(context).textTheme;
+    final colorScheme = Theme.of(context).colorScheme;
 
-    return SizedBox(
+    return Container(
+      margin: EdgeInsets.symmetric(horizontal: 16.w),
       width: double.infinity,
       child: DecoratedBox(
         decoration: BoxDecoration(
           gradient: LinearGradient(colors: gradient),
-          borderRadius: BorderRadius.circular(30),
+          borderRadius: BorderRadius.circular(30.r),
         ),
         child: Material(
           color: Colors.transparent,
           child: InkWell(
             onTap: onTap,
-            borderRadius: BorderRadius.circular(30),
+            borderRadius: BorderRadius.circular(30.r),
             child: Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 22, vertical: 16),
+              padding: EdgeInsets.symmetric(horizontal: 22.w, vertical: 16.h),
               child: Row(
                 children: [
                   Text(
                     priceLabel,
                     style: textTheme.titleMedium?.copyWith(
-                      color: Colors.white,
+                      color: colorScheme.onPrimary,
                       fontWeight: FontWeight.w700,
                     ),
                   ),
@@ -558,7 +660,7 @@ class _AddToBagButton extends StatelessWidget {
                   Text(
                     'Add to Bag',
                     style: textTheme.titleMedium?.copyWith(
-                      color: Colors.white,
+                      color: colorScheme.onPrimary,
                       fontWeight: FontWeight.w600,
                     ),
                   ),
@@ -569,12 +671,5 @@ class _AddToBagButton extends StatelessWidget {
         ),
       ),
     );
-  }
-}
-
-class ProductDetailsBinding extends Bindings {
-  @override
-  void dependencies() {
-    // Get.lazyPut<ProductDetailsController>(() => ProductDetailsController());
   }
 }

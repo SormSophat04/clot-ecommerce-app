@@ -1,5 +1,6 @@
 import 'package:clot_ecommerce_app/core/widgets/common/app_bar.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:get/get.dart';
 
 import '../../../core/utils/validators.dart';
@@ -26,14 +27,14 @@ class ForgotPasswordView extends StatelessWidget {
               subtitle: 'Enter your email and we will send a reset link.',
               topSpacing: Get.height * 0.05,
             ),
-            const SizedBox(height: 32),
+            SizedBox(height: 32.h),
             CustomTextField(
               hint: 'Email',
               controller: controller.forgotPasswordEmailController,
               keyboardType: TextInputType.emailAddress,
               validator: Validators.email,
             ),
-            const SizedBox(height: 24),
+            SizedBox(height: 24.h),
             PrimaryButton(
               text: 'Send Reset Link',
               isLoading: controller.isLoading,
