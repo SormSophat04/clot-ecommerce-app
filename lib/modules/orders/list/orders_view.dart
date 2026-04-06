@@ -1,16 +1,16 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
+import '../../../core/widgets/common/feature_placeholder_scaffold.dart';
 
 class OrdersView extends StatelessWidget {
   const OrdersView({super.key});
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(title: const Text('My Orders')),
-      body: const Center(
-        child: Text('Orders List View - To be implemented'),
-      ),
+    return const FeaturePlaceholderScaffold(
+      title: 'My Orders',
+      message: 'Orders list view is coming soon.',
+      icon: Icons.receipt_long_outlined,
     );
   }
 }

@@ -1,16 +1,16 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
+import '../../core/widgets/common/feature_placeholder_scaffold.dart';
 
 class NotificationsView extends StatelessWidget {
   const NotificationsView({super.key});
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(title: const Text('Notifications')),
-      body: const Center(
-        child: Text('Notifications View - To be implemented'),
-      ),
+    return const FeaturePlaceholderScaffold(
+      title: 'Notifications',
+      message: 'Notifications view is coming soon.',
+      icon: Icons.notifications_outlined,
     );
   }
 }

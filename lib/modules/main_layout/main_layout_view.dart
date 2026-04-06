@@ -8,10 +8,8 @@ import 'package:get/get.dart';
 
 import 'main_layout_controller.dart';
 
-class MainLayoutView extends StatelessWidget {
+class MainLayoutView extends GetView<MainLayoutController> {
   MainLayoutView({super.key});
-
-  final MainLayoutController controller = Get.put(MainLayoutController());
 
   final List<Widget> pages = [
     const HomeView(),

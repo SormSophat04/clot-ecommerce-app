@@ -1,16 +1,16 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
+import '../../../core/widgets/common/feature_placeholder_scaffold.dart';
 
 class CheckoutView extends StatelessWidget {
   const CheckoutView({super.key});
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(title: const Text('Checkout')),
-      body: const Center(
-        child: Text('Checkout View - To be implemented'),
-      ),
+    return const FeaturePlaceholderScaffold(
+      title: 'Checkout',
+      message: 'Checkout view is coming soon.',
+      icon: Icons.payment_outlined,
     );
   }
 }

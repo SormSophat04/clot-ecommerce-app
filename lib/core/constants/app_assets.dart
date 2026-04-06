@@ -13,6 +13,7 @@ class AppAssets {
   static const String profile = '$iconPath/profile.png';
   static const String search = '$iconPath/searchnormal1.png';
   static const String cart = '$iconPath/bag2.png';
+  static const String heart = '$iconPath/heart.png';
 
 
 }
