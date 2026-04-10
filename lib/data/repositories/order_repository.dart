@@ -51,7 +51,7 @@ class OrderRepository {
   }) async {
     try {
       final response = await _apiClient.post(
-        ApiConstants.checkout,
+        ApiConstants.checkout, {},
         data: {
           'payment_method': paymentMethod,
           'address_id': addressId,
@@ -73,7 +73,7 @@ class OrderRepository {
   Future<OrderModel> cancelOrder(String orderId) async {
     try {
       final response = await _apiClient.post(
-        '${ApiConstants.orders}/$orderId/cancel',
+        '${ApiConstants.orders}/$orderId/cancel', {},
       );
 
       if (response.statusCode == 200) {

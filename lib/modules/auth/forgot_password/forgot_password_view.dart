@@ -8,6 +8,7 @@ import '../../../core/widgets/auth/auth_form_scaffold.dart';
 import '../../../core/widgets/auth/auth_header.dart';
 import '../../../core/widgets/custom_buttons/primary_button.dart';
 import '../../../core/widgets/custom_inputs/custom_text_field.dart';
+import '../auth_controller/auth_binding.dart';
 import '../auth_controller/auth_controller.dart';
 
 class ForgotPasswordView extends StatelessWidget {
@@ -16,9 +17,12 @@ class ForgotPasswordView extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return GetBuilder<AuthController>(
+      tag: authControllerTag,
+      autoRemove: false,
       builder: (controller) => AuthFormScaffold(
         appBar: const CustomAppBar(title: 'Forgot Password'),
         formKey: controller.forgotPasswordFormKey,
+        autovalidateMode: AutovalidateMode.onUserInteraction,
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [

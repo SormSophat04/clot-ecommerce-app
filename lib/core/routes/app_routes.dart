@@ -2,6 +2,7 @@ import 'package:clot_ecommerce_app/modules/home/home_binding.dart';
 import 'package:clot_ecommerce_app/modules/main_layout/main_layout_binding.dart';
 import 'package:clot_ecommerce_app/modules/main_layout/main_layout_view.dart';
 import 'package:clot_ecommerce_app/modules/notifications/notifications_binding.dart';
+import 'package:clot_ecommerce_app/modules/product/product_binding.dart';
 import 'package:clot_ecommerce_app/modules/product/details/product_details_binding.dart';
 import 'package:get/get.dart';
 

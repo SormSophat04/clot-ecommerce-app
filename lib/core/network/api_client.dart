@@ -1,18 +1,26 @@
 import 'package:dio/dio.dart';
 import 'package:get/get.dart' hide Response;
+import 'package:clot_ecommerce_app/core/config/app_config.dart';
+import 'package:clot_ecommerce_app/core/routes/app_routes.dart';
+import 'package:clot_ecommerce_app/data/sources/local/storage_service.dart';
 import 'api_constants.dart';
 import '../utils/app_logger.dart';
 
 class ApiClient extends GetxService {
   late Dio _dio;
-  late String _token;
+  String _token = '';
+  bool _isHandlingSessionExpiry = false;
 
   ApiClient() {
     _dio = Dio(
       BaseOptions(
-        baseUrl: ApiConstants.baseUrl,
-        connectTimeout: const Duration(milliseconds: ApiConstants.connectionTimeout),
-        receiveTimeout: const Duration(milliseconds: ApiConstants.receiveTimeout),
+        baseUrl: AppConfig.envConfig.apiBaseUrl,
+        connectTimeout: const Duration(
+          milliseconds: ApiConstants.connectionTimeout,
+        ),
+        receiveTimeout: const Duration(
+          milliseconds: ApiConstants.receiveTimeout,
+        ),
         headers: {
           'Content-Type': 'application/json',
           'Accept': 'application/json',
@@ -62,16 +70,21 @@ class ApiClient extends GetxService {
     Options? options,
   }) async {
     try {
-      return await _dio.get(path, queryParameters: queryParameters, options: options);
+      return await _dio.get(
+        path,
+        queryParameters: queryParameters,
+        options: options,
+      );
     } on DioException catch (e) {
-      _handleError(e);
+      await _handleError(e);
       rethrow;
     }
   }
 
   // POST request
   Future<Response<dynamic>> post(
-    String path, {
+    String path,
+    Map<String, String> map, {
     dynamic data,
     Map<String, dynamic>? queryParameters,
     Options? options,
@@ -79,12 +92,12 @@ class ApiClient extends GetxService {
     try {
       return await _dio.post(
         path,
-        data: data,
+        data: data ?? map,
         queryParameters: queryParameters,
         options: options,
       );
     } on DioException catch (e) {
-      _handleError(e);
+      await _handleError(e);
       rethrow;
     }
   }
@@ -104,7 +117,7 @@ class ApiClient extends GetxService {
         options: options,
       );
     } on DioException catch (e) {
-      _handleError(e);
+      await _handleError(e);
       rethrow;
     }
   }
@@ -124,7 +137,7 @@ class ApiClient extends GetxService {
         options: options,
       );
     } on DioException catch (e) {
-      _handleError(e);
+      await _handleError(e);
       rethrow;
     }
   }
@@ -144,13 +157,18 @@ class ApiClient extends GetxService {
         options: options,
       );
     } on DioException catch (e) {
-      _handleError(e);
+      await _handleError(e);
       rethrow;
     }
   }
 
   // Handle Dio errors
-  void _handleError(DioException error) {
+  Future<void> _handleError(DioException error) async {
+    if (_shouldHandleSessionExpiry(error)) {
+      await _handleSessionExpiry();
+      return;
+    }
+
     String message = 'An error occurred';
 
     switch (error.type) {
@@ -192,5 +210,70 @@ class ApiClient extends GetxService {
     }
 
     Get.snackbar('Error', message, snackPosition: SnackPosition.BOTTOM);
+  }
+
+  bool _shouldHandleSessionExpiry(DioException error) {
+    final statusCode = error.response?.statusCode;
+    final requestPath = error.requestOptions.path;
+    if (_isPublicAuthEndpoint(requestPath)) return false;
+
+    if (statusCode == 401) {
+      return true;
+    }
+
+    if (statusCode == 403) {
+      final normalizedBody = _normalizeBodyForCheck(error.response?.data);
+      return normalizedBody.contains('expired') ||
+          normalizedBody.contains('token') ||
+          normalizedBody.contains('invalid credentials') ||
+          normalizedBody.contains('unauthorized');
+    }
+
+    return false;
+  }
+
+  bool _isPublicAuthEndpoint(String path) {
+    final normalized = path.trim().toLowerCase();
+    return normalized.contains(ApiConstants.login.toLowerCase()) ||
+        normalized.contains(ApiConstants.register.toLowerCase()) ||
+        normalized.contains(ApiConstants.forgotPassword.toLowerCase()) ||
+        normalized.contains(ApiConstants.resetPassword.toLowerCase()) ||
+        normalized.contains(ApiConstants.refreshToken.toLowerCase());
+  }
+
+  Future<void> _handleSessionExpiry() async {
+    if (_isHandlingSessionExpiry) return;
+    _isHandlingSessionExpiry = true;
+
+    try {
+      clearToken();
+
+      if (Get.isRegistered<StorageService>()) {
+        await Get.find<StorageService>().clearAuth();
+      }
+
+      final currentRoute = Get.currentRoute;
+      if (currentRoute != Routes.login && currentRoute != Routes.register) {
+        await Future<void>.delayed(Duration.zero);
+        Get.offAllNamed(Routes.login);
+      }
+
+      Get.snackbar(
+        'Session Expired',
+        'Please sign in again.',
+        snackPosition: SnackPosition.BOTTOM,
+      );
+    } finally {
+      _isHandlingSessionExpiry = false;
+    }
+  }
+
+  String _normalizeBodyForCheck(dynamic value) {
+    if (value == null) return '';
+    if (value is String) return value.toLowerCase();
+    if (value is Map) {
+      return value.values.map((item) => '$item').join(' ').toLowerCase();
+    }
+    return value.toString().toLowerCase();
   }
 }

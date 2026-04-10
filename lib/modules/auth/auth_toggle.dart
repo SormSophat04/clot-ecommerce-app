@@ -1,4 +1,8 @@
 import 'package:flutter/material.dart';
+import 'package:get/get.dart';
+
+import '../../core/routes/app_routes.dart';
+import '../../data/sources/local/storage_service.dart';
 
 import 'login/login_view.dart';
 import 'register/register_view.dart';
@@ -49,5 +53,19 @@ class _AuthToggleState extends State<AuthToggle> {
       key: const ValueKey('register_view'),
       onToggleToLogin: _showLogin,
     );
+  }
+}
+
+class AuthRouteMiddleware extends GetMiddleware {
+  @override
+  int? get priority => 1;
+
+  @override
+  RouteSettings? redirect(String? route) {
+    final storageService = Get.find<StorageService>();
+    if (storageService.isLoggedIn) {
+      return const RouteSettings(name: Routes.mainLayout);
+    }
+    return null;
   }
 }

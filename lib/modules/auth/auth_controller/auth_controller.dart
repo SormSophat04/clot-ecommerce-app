@@ -1,3 +1,4 @@
+import 'package:clot_ecommerce_app/data/repositories/auth_repository.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 
@@ -6,7 +7,7 @@ import '../../../core/routes/app_routes.dart';
 class AuthController extends GetxController {
   // Login
   final loginFormKey = GlobalKey<FormState>();
-  final loginEmailController = TextEditingController();
+  final loginPhoneNumberController = TextEditingController();
   final loginPasswordController = TextEditingController();
 
   // Sign Up
@@ -15,6 +16,7 @@ class AuthController extends GetxController {
   final signUpPhoneController = TextEditingController();
   final signUpEmailController = TextEditingController();
   final signUpPasswordController = TextEditingController();
+  final signUpConfirmPasswordController = TextEditingController();
 
   // Forgot Password
   final forgotPasswordFormKey = GlobalKey<FormState>();
@@ -23,15 +25,19 @@ class AuthController extends GetxController {
   bool isLoading = false;
   bool isLoginPasswordVisible = false;
   bool isSignUpPasswordVisible = false;
+  bool isSignUpConfirmPasswordVisible = false;
+
+  final AuthRepository _authRepository = Get.find<AuthRepository>();
 
   @override
   void onClose() {
-    loginEmailController.dispose();
+    loginPhoneNumberController.dispose();
     loginPasswordController.dispose();
     signUpNameController.dispose();
     signUpPhoneController.dispose();
     signUpEmailController.dispose();
     signUpPasswordController.dispose();
+    signUpConfirmPasswordController.dispose();
     forgotPasswordEmailController.dispose();
     super.onClose();
   }
@@ -46,20 +52,28 @@ class AuthController extends GetxController {
     update();
   }
 
+  void toggleSignUpConfirmPasswordVisibility() {
+    isSignUpConfirmPasswordVisible = !isSignUpConfirmPasswordVisible;
+    update();
+  }
+
   Future<void> login() async {
-    // if (!loginFormKey.currentState!.validate()) return;
+    if (!loginFormKey.currentState!.validate()) return;
 
     _setLoading(true);
     try {
-      await Future.delayed(const Duration(seconds: 1));
+      await _authRepository.login(
+        loginPhoneNumberController.text,
+        loginPasswordController.text,
+      );
 
-      // Get.snackbar(
-      //   'Success',
-      //   'Logged in successfully',
-      //   snackPosition: SnackPosition.BOTTOM,
-      //   backgroundColor: Colors.green,
-      //   colorText: Colors.white,
-      // );
+      Get.snackbar(
+        'Success',
+        'Logged in successfully',
+        snackPosition: SnackPosition.BOTTOM,
+        backgroundColor: Colors.green,
+        colorText: Colors.white,
+      );
 
       Get.offAllNamed(Routes.splash);
     } catch (e) {
@@ -74,8 +88,12 @@ class AuthController extends GetxController {
 
     _setLoading(true);
     try {
-      // TODO: Implement actual sign up with repository
-      await Future.delayed(const Duration(seconds: 2));
+      await _authRepository.register(
+        username: signUpNameController.text,
+        phoneNumber: signUpPhoneController.text,
+        email: signUpEmailController.text,
+        password: signUpPasswordController.text,
+      );
 
       Get.snackbar(
         'Success',

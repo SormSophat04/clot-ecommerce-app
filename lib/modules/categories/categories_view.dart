@@ -1,4 +1,6 @@
 import 'package:clot_ecommerce_app/core/widgets/common/app_bar.dart';
+import 'package:clot_ecommerce_app/core/widgets/common/loading_indicator.dart';
+import 'package:clot_ecommerce_app/core/widgets/common/skeleton_loader.dart';
 import 'package:clot_ecommerce_app/modules/categories/categories_controller.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:flutter/material.dart';
@@ -37,12 +39,50 @@ class CategoriesView extends StatelessWidget {
               ),
               SizedBox(height: 18.h),
               Expanded(
-                child: CategoriesList(
-                  controller: controller,
-                  textTheme: textTheme,
-                  colors: colors,
-                  mutedSurface: mutedSurface,
-                ),
+                child: Obx(() {
+                  final loading = controller.isLoading.value;
+                  final error = controller.errorMessage.value;
+                  final isEmpty = controller.categories.isEmpty;
+
+                  if (loading && isEmpty) {
+                    return const CategoriesListSkeleton();
+                  }
+
+                  if (error.isNotEmpty && isEmpty) {
+                    return Center(
+                      child: Padding(
+                        padding: EdgeInsets.symmetric(horizontal: 16.w),
+                        child: Column(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            Text(
+                              error,
+                              textAlign: TextAlign.center,
+                              style: textTheme.bodyMedium?.copyWith(
+                                color: colors.onSurfaceVariant,
+                              ),
+                            ),
+                            SizedBox(height: 10.h),
+                            TextButton(
+                              onPressed: controller.fetchCategories,
+                              child: const Text('Retry'),
+                            ),
+                          ],
+                        ),
+                      ),
+                    );
+                  }
+
+                  return RefreshIndicator(
+                    onRefresh: controller.fetchCategories,
+                    child: CategoriesList(
+                      controller: controller,
+                      textTheme: textTheme,
+                      colors: colors,
+                      mutedSurface: mutedSurface,
+                    ),
+                  );
+                }),
               ),
             ],
           ),
@@ -51,4 +91,3 @@ class CategoriesView extends StatelessWidget {
     );
   }
 }
-
