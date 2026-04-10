@@ -42,6 +42,7 @@ dependencies:
   jailbreak_root_detection: ^1.2.0+1
   flutter_windowmanager_plus: ^1.0.1
   flutter_secure_storage: ^10.0.0
+  shimmer: ^3.0.0
 
 dev_dependencies:
   flutter_test:

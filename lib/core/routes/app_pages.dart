@@ -9,6 +9,7 @@ abstract class AppPages {
       name: Routes.mainLayout,
       page: () => MainLayoutView(),
       binding: MainLayoutBinding(),
+      middlewares: [MainLayoutMiddleware()],
     ),
 
     // Auth Module
@@ -26,11 +27,13 @@ abstract class AppPages {
       name: Routes.login,
       page: () => const AuthToggle(initialIndex: AuthToggle.loginIndex),
       binding: AuthBinding(),
+      middlewares: [AuthRouteMiddleware()],
     ),
     GetPage(
       name: Routes.register,
       page: () => const AuthToggle(initialIndex: AuthToggle.registerIndex),
       binding: AuthBinding(),
+      middlewares: [AuthRouteMiddleware()],
     ),
     GetPage(
       name: Routes.forgotPassword,
@@ -53,6 +56,7 @@ abstract class AppPages {
     GetPage(
       name: Routes.product,
       page: () => const ProductView(),
+      binding: ProductBinding(),
     ),
     GetPage(
       name: Routes.productDetails,

@@ -1,11 +1,11 @@
 abstract class ApiConstants {
   // Base URL - Change this to your API endpoint
-  static const String baseUrl = 'https://api.your-ecommerce.com';
-  static const String apiVersion = '/api/v1';
+  static const String baseUrl = 'http://10.0.2.2:8080';
+  static const String apiVersion = '/api';
 
   // Endpoints
-  static const String login = '$apiVersion/auth/login';
-  static const String register = '$apiVersion/auth/register';
+  static const String login = '$apiVersion/users/login';
+  static const String register = '$apiVersion/users/register';
   static const String logout = '$apiVersion/auth/logout';
   static const String refreshToken = '$apiVersion/auth/refresh';
   static const String forgotPassword = '$apiVersion/auth/forgot-password';
@@ -14,6 +14,7 @@ abstract class ApiConstants {
   // User
   static const String userProfile = '$apiVersion/user/profile';
   static const String updateProfile = '$apiVersion/user/update';
+  static const String currentUser = '$apiVersion/auth/me';
 
   // Products
   static const String products = '$apiVersion/products';
@@ -27,6 +28,10 @@ abstract class ApiConstants {
   static const String addToCart = '$apiVersion/cart/add';
   static const String removeFromCart = '$apiVersion/cart/remove';
   static const String updateCart = '$apiVersion/cart/update';
+  static String userCart(String userId) => '$apiVersion/users/$userId/cart';
+  static String userCartItem(String userId, String productId) =>
+      '${userCart(userId)}/$productId';
+  static String userCartCount(String userId) => '${userCart(userId)}/count';
 
   // Wishlist
   static const String wishlist = '$apiVersion/wishlist';

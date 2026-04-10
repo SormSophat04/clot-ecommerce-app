@@ -1,3 +1,6 @@
+import 'dart:convert';
+import 'dart:typed_data';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 
@@ -55,44 +58,53 @@ class CategoryTile extends StatelessWidget {
   final Color mutedSurface;
   final VoidCallback onTap;
 
-  static const Map<String, IconData> _icons = {
-    'Hoodies': Icons.style_rounded,
-    'Shorts': Icons.dry_cleaning_rounded,
-    'Shoes': Icons.directions_walk_rounded,
-    'Bag': Icons.shopping_bag_rounded,
-    'Accessories': Icons.watch_rounded,
-  };
-
   @override
   Widget build(BuildContext context) {
+    final image = category.image?.trim();
+    final imageBytes = image == null ? null : _decodeImage(image);
+    final isNetworkImage =
+        image != null &&
+        (image.startsWith('http://') || image.startsWith('https://'));
+
     return GestureDetector(
       onTap: onTap,
       child: SizedBox(
-        width: 86.w,
+        width: 70.w,
         child: Column(
           children: [
             Container(
-              width: 86.w,
-              height: 72.h,
+              width: 70.w,
+              height: 70.h,
               decoration: BoxDecoration(
                 color: mutedSurface,
                 borderRadius: BorderRadius.circular(20.r),
+                border: Border.all(
+                  color: colors.surfaceContainerHighest,
+                  width: 0.5,
+                ),
               ),
-              child: Center(
-                child: Container(
-                  width: 50.w,
-                  height: 50.h,
-                  decoration: BoxDecoration(
-                    color: category.color,
-                    shape: BoxShape.circle,
-                  ),
-                  child: Center(
-                    child: Icon(
-                      _icons[category.label] ?? Icons.category_rounded,
-                      size: 24.sp,
-                      color: colors.primary,
-                    ),
-                  ),
+              child: ClipRRect(
+                borderRadius: BorderRadius.circular(20.r),
+                child: Builder(
+                  builder: (_) {
+                    if (isNetworkImage) {
+                      return Image.network(
+                        image,
+                        fit: BoxFit.cover,
+                        errorBuilder: (_, _, _) => _buildFallbackIcon(),
+                      );
+                    }
+
+                    if (imageBytes != null) {
+                      return Image.memory(
+                        imageBytes,
+                        fit: BoxFit.cover,
+                        errorBuilder: (_, _, _) => _buildFallbackIcon(),
+                      );
+                    }
+
+                    return _buildFallbackIcon();
+                  },
                 ),
               ),
             ),
@@ -112,5 +124,53 @@ class CategoryTile extends StatelessWidget {
         ),
       ),
     );
+  }
+
+  IconData _iconForCategory(String label) {
+    final normalized = label.trim().toLowerCase();
+    if (normalized.contains('hoodie') || normalized.contains('jacket')) {
+      return Icons.style_rounded;
+    }
+    if (normalized.contains('short')) {
+      return Icons.dry_cleaning_rounded;
+    }
+    if (normalized.contains('shoe') || normalized.contains('sneaker')) {
+      return Icons.directions_walk_rounded;
+    }
+    if (normalized.contains('bag') || normalized.contains('backpack')) {
+      return Icons.shopping_bag_rounded;
+    }
+    if (normalized.contains('accessor') || normalized.contains('watch')) {
+      return Icons.watch_rounded;
+    }
+    return Icons.category_rounded;
+  }
+
+  Widget _buildFallbackIcon() {
+    return Center(
+      child: Icon(
+        _iconForCategory(category.label),
+        size: 24.sp,
+        color: colors.primary,
+      ),
+    );
+  }
+
+  Uint8List? _decodeImage(String raw) {
+    if (raw.startsWith('http://') || raw.startsWith('https://')) {
+      return null;
+    }
+
+    try {
+      final normalized = raw.startsWith('data:')
+          ? raw.substring(raw.indexOf(',') + 1)
+          : raw;
+      if (normalized.isEmpty) {
+        return null;
+      }
+      return base64Decode(normalized);
+    } catch (_) {
+      return null;
+    }
   }
 }

@@ -5,6 +5,7 @@ import 'package:clot_ecommerce_app/core/widgets/auth/auth_header.dart';
 import 'package:clot_ecommerce_app/core/widgets/custom_buttons/primary_button.dart';
 import 'package:clot_ecommerce_app/core/widgets/custom_buttons/secondary_button.dart';
 import 'package:clot_ecommerce_app/core/widgets/custom_inputs/custom_text_field.dart';
+import 'package:clot_ecommerce_app/modules/auth/auth_controller/auth_binding.dart';
 import 'package:clot_ecommerce_app/modules/auth/auth_controller/auth_controller.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
@@ -18,8 +19,11 @@ class RegisterView extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return GetBuilder<AuthController>(
+      tag: authControllerTag,
+      autoRemove: false,
       builder: (controller) => AuthFormScaffold(
         formKey: controller.signUpFormKey,
+        autovalidateMode: AutovalidateMode.onUserInteraction,
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
@@ -62,6 +66,23 @@ class RegisterView extends StatelessWidget {
                 onPressed: controller.toggleSignUpPasswordVisibility,
               ),
               validator: Validators.password,
+            ),
+            SizedBox(height: 16.h),
+            CustomTextField(
+              hint: 'Confirm Password',
+              controller: controller.signUpConfirmPasswordController,
+              obscureText: !controller.isSignUpConfirmPasswordVisible,
+              suffixIcon: IconButton(
+                icon: Icon(
+                  controller.isSignUpConfirmPasswordVisible
+                      ? Icons.visibility_outlined
+                      : Icons.visibility_off_outlined,
+                ),
+                onPressed: controller.toggleSignUpConfirmPasswordVisibility,
+              ),
+              validator: Validators.confirmPassword(
+                controller.signUpPasswordController.text,
+              ),
             ),
             SizedBox(height: 44.h),
             PrimaryButton(

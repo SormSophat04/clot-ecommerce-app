@@ -69,9 +69,9 @@ class CartItemModel {
 
   factory CartItemModel.fromJson(Map<String, dynamic> json) {
     return CartItemModel(
-      id: json['id']?.toString() ?? '',
+      id: (json['id'] ?? json['cartId'])?.toString() ?? '',
       product: ProductModel.fromJson(json['product'] ?? {}),
-      quantity: json['quantity'] ?? 1,
+      quantity: (json['quantity'] as num?)?.toInt() ?? 1,
       variationId: json['variation_id'],
       variationName: json['variation_name'],
     );

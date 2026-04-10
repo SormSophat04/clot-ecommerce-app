@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:get/get.dart';
 import '../../../core/constants/app_assets.dart';
+import '../../../core/routes/app_routes.dart';
 import '../cart_controller.dart';
 
 class OrderSummary extends GetView<CartController> {
@@ -56,7 +57,7 @@ class OrderSummary extends GetView<CartController> {
                     decoration: InputDecoration(
                       hintText: 'Enter Coupon Code',
                       hintStyle: theme.textTheme.bodyMedium?.copyWith(
-                         color: colorScheme.onSurfaceVariant.withOpacity(0.6),
+                         color: colorScheme.onSurfaceVariant.withValues(alpha: 0.6),
                       ),
                       border: InputBorder.none,
                       focusedBorder: InputBorder.none,
@@ -88,7 +89,9 @@ class OrderSummary extends GetView<CartController> {
           SizedBox(
             width: double.infinity,
             child: ElevatedButton(
-              onPressed: () {},
+              onPressed: () {
+                Get.toNamed(Routes.checkout);
+              },
               style: ElevatedButton.styleFrom(
                 backgroundColor: colorScheme.primary,
                 foregroundColor: colorScheme.onPrimary,

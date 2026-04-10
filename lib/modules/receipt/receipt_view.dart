@@ -1,3 +1,4 @@
+import 'package:clot_ecommerce_app/core/widgets/common/app_bar.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:get/get.dart';
@@ -17,7 +18,10 @@ class ReceiptView extends StatelessWidget {
     return Scaffold(
       backgroundColor: colorScheme.surface,
       appBar: AppBar(
-        title: const Text('Orders', style: TextStyle(fontWeight: FontWeight.bold)),
+        title: const Text(
+          'Orders',
+          style: TextStyle(fontWeight: FontWeight.bold),
+        ),
         backgroundColor: colorScheme.surface,
         elevation: 0,
       ),
@@ -48,7 +52,8 @@ class ReceiptView extends StatelessWidget {
               child: Row(
                 children: OrderStatus.values.map((status) {
                   return Obx(() {
-                    final isSelected = controller.selectedFilter.value == status;
+                    final isSelected =
+                        controller.selectedFilter.value == status;
                     return Padding(
                       padding: EdgeInsets.only(right: 8.w),
                       child: ActionChip(
@@ -58,16 +63,19 @@ class ReceiptView extends StatelessWidget {
                             color: isSelected
                                 ? colorScheme.onPrimary
                                 : colorScheme.onSurface,
-                            fontWeight: isSelected ? FontWeight.w600 : FontWeight.normal,
+                            fontWeight: isSelected
+                                ? FontWeight.w600
+                                : FontWeight.normal,
                           ),
                         ),
                         backgroundColor: isSelected
                             ? colorScheme.primary
                             : (theme.inputDecorationTheme.fillColor ??
-                                colorScheme.surfaceContainerHighest),
+                                  colorScheme.surfaceContainerHighest),
                         side: BorderSide.none,
                         shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(20.r)),
+                          borderRadius: BorderRadius.circular(20.r),
+                        ),
                         onPressed: () => controller.setFilter(status),
                       ),
                     );
@@ -89,14 +97,18 @@ class ReceiptView extends StatelessWidget {
                   );
                 }
                 return ListView.separated(
-                  padding: EdgeInsets.symmetric(horizontal: 16.w, vertical: 8.h),
+                  padding: EdgeInsets.symmetric(
+                    horizontal: 16.w,
+                    vertical: 8.h,
+                  ),
                   itemCount: orders.length,
                   separatorBuilder: (context, index) => SizedBox(height: 12.h),
                   itemBuilder: (context, index) {
                     final order = orders[index];
                     return OrderCard(
                       order: order,
-                      onTap: () => Get.to(() => ReceiptDetailView(order: order)),
+                      onTap: () =>
+                          Get.to(() => ReceiptDetailView(order: order)),
                     );
                   },
                 );
@@ -120,7 +132,8 @@ class OrderCard extends StatelessWidget {
     final theme = Theme.of(context);
     final colorScheme = theme.colorScheme;
     final cardColor =
-        theme.inputDecorationTheme.fillColor ?? colorScheme.surfaceContainerHighest;
+        theme.inputDecorationTheme.fillColor ??
+        colorScheme.surfaceContainerHighest;
 
     return InkWell(
       onTap: onTap,
@@ -138,8 +151,11 @@ class OrderCard extends StatelessWidget {
               width: 24.w,
               height: 24.h,
               color: colorScheme.onSurface,
-              errorBuilder: (_, __, ___) => Icon(Icons.receipt_long,
-                  size: 24.sp, color: colorScheme.onSurface),
+              errorBuilder: (_, __, ___) => Icon(
+                Icons.receipt_long,
+                size: 24.sp,
+                color: colorScheme.onSurface,
+              ),
             ),
             SizedBox(width: 16.w),
             Expanded(
@@ -183,30 +199,35 @@ class ReceiptDetailView extends StatelessWidget {
     final theme = Theme.of(context);
     final colorScheme = theme.colorScheme;
     final cardColor =
-        theme.inputDecorationTheme.fillColor ?? colorScheme.surfaceContainerHighest;
+        theme.inputDecorationTheme.fillColor ??
+        colorScheme.surfaceContainerHighest;
 
     return Scaffold(
       backgroundColor: colorScheme.surface,
-      appBar: AppBar(
-        backgroundColor: colorScheme.surface,
-        elevation: 0,
-        leading: IconButton(
-          icon: Container(
-            padding: EdgeInsets.all(8.r),
-            decoration: BoxDecoration(
-              shape: BoxShape.circle,
-              color: cardColor,
-            ),
-            child: Icon(Icons.chevron_left,
-                size: 20.sp, color: colorScheme.onSurface),
-          ),
-          onPressed: () => Get.back(),
-        ),
-        title: Text('Order ${order.id}',
-            style: TextStyle(
-                fontWeight: FontWeight.bold, color: colorScheme.onSurface)),
-        centerTitle: true,
+      appBar: CustomAppBar(
+        title: 'Order ${order.id}',
+        actions: [Container(width: 40)],
       ),
+      // AppBar(
+      //   backgroundColor: colorScheme.surface,
+      //   elevation: 0,
+      //   leading: IconButton(
+      //     icon: Container(
+      //       padding: EdgeInsets.all(8.r),
+      //       decoration: BoxDecoration(
+      //         shape: BoxShape.circle,
+      //         color: cardColor,
+      //       ),
+      //       child: Icon(Icons.chevron_left,
+      //           size: 20.sp, color: colorScheme.onSurface),
+      //     ),
+      //     onPressed: () => Get.back(),
+      //   ),
+      //   title: Text('Order ${order.id}',
+      //       style: TextStyle(
+      //           fontWeight: FontWeight.bold, color: colorScheme.onSurface)),
+      //   centerTitle: true,
+      // ),
       body: SingleChildScrollView(
         padding: EdgeInsets.all(24.r),
         child: Column(
@@ -214,11 +235,13 @@ class ReceiptDetailView extends StatelessWidget {
           children: [
             _buildTimeline(theme),
             SizedBox(height: 32.h),
-            Text('Order Items',
-                style: theme.textTheme.titleMedium?.copyWith(
-                  fontWeight: FontWeight.bold,
-                  color: colorScheme.onSurface,
-                )),
+            Text(
+              'Order Items',
+              style: theme.textTheme.titleMedium?.copyWith(
+                fontWeight: FontWeight.bold,
+                color: colorScheme.onSurface,
+              ),
+            ),
             SizedBox(height: 16.h),
             Container(
               padding: EdgeInsets.all(16.r),
@@ -233,8 +256,11 @@ class ReceiptDetailView extends StatelessWidget {
                     width: 24.w,
                     height: 24.h,
                     color: colorScheme.onSurface,
-                    errorBuilder: (_, __, ___) => Icon(Icons.receipt_long,
-                        size: 24.sp, color: colorScheme.onSurface),
+                    errorBuilder: (_, __, ___) => Icon(
+                      Icons.receipt_long,
+                      size: 24.sp,
+                      color: colorScheme.onSurface,
+                    ),
                   ),
                   SizedBox(width: 16.w),
                   Expanded(
@@ -258,11 +284,13 @@ class ReceiptDetailView extends StatelessWidget {
               ),
             ),
             SizedBox(height: 32.h),
-            Text('Shipping details',
-                style: theme.textTheme.titleMedium?.copyWith(
-                  fontWeight: FontWeight.bold,
-                  color: colorScheme.onSurface,
-                )),
+            Text(
+              'Shipping details',
+              style: theme.textTheme.titleMedium?.copyWith(
+                fontWeight: FontWeight.bold,
+                color: colorScheme.onSurface,
+              ),
+            ),
             SizedBox(height: 16.h),
             Container(
               padding: EdgeInsets.all(16.r),
@@ -276,14 +304,18 @@ class ReceiptDetailView extends StatelessWidget {
                 children: [
                   Text(
                     order.address,
-                    style:
-                        TextStyle(fontSize: 14.sp, color: colorScheme.onSurface),
+                    style: TextStyle(
+                      fontSize: 14.sp,
+                      color: colorScheme.onSurface,
+                    ),
                   ),
                   SizedBox(height: 8.h),
                   Text(
                     order.phone,
-                    style:
-                        TextStyle(fontSize: 14.sp, color: colorScheme.onSurface),
+                    style: TextStyle(
+                      fontSize: 14.sp,
+                      color: colorScheme.onSurface,
+                    ),
                   ),
                 ],
               ),
@@ -308,24 +340,45 @@ class ReceiptDetailView extends StatelessWidget {
       'Sep',
       'Oct',
       'Nov',
-      'Dec'
+      'Dec',
     ][order.date.month];
     final dateStr = '${order.date.day.toString().padLeft(2, '0')} $monthStr';
 
     return Column(
       children: [
-        _buildTimelineItem(theme, 'Delivered', dateStr,
-            isCompleted: false, isFirst: true),
+        _buildTimelineItem(
+          theme,
+          'Delivered',
+          dateStr,
+          isCompleted: false,
+          isFirst: true,
+        ),
         _buildTimelineItem(theme, 'Shipped', dateStr, isCompleted: true),
-        _buildTimelineItem(theme, 'Order Confirmed', dateStr, isCompleted: true),
-        _buildTimelineItem(theme, 'Order Placed', dateStr,
-            isCompleted: true, isLast: true),
+        _buildTimelineItem(
+          theme,
+          'Order Confirmed',
+          dateStr,
+          isCompleted: true,
+        ),
+        _buildTimelineItem(
+          theme,
+          'Order Placed',
+          dateStr,
+          isCompleted: true,
+          isLast: true,
+        ),
       ],
     );
   }
 
-  Widget _buildTimelineItem(ThemeData theme, String title, String date,
-      {bool isCompleted = false, bool isFirst = false, bool isLast = false}) {
+  Widget _buildTimelineItem(
+    ThemeData theme,
+    String title,
+    String date, {
+    bool isCompleted = false,
+    bool isFirst = false,
+    bool isLast = false,
+  }) {
     final colorScheme = theme.colorScheme;
     return Row(
       crossAxisAlignment: CrossAxisAlignment.start,
@@ -334,11 +387,12 @@ class ReceiptDetailView extends StatelessWidget {
           children: [
             if (!isFirst)
               Container(
-                  width: 2.w,
-                  height: 24.h,
-                  color: isCompleted
-                      ? colorScheme.primary
-                      : colorScheme.onSurfaceVariant.withOpacity(0.2))
+                width: 2.w,
+                height: 24.h,
+                color: isCompleted
+                    ? colorScheme.primary
+                    : colorScheme.onSurfaceVariant.withOpacity(0.2),
+              )
             else
               SizedBox(height: 24.h),
             Container(
@@ -356,11 +410,12 @@ class ReceiptDetailView extends StatelessWidget {
             ),
             if (!isLast)
               Container(
-                  width: 2.w,
-                  height: 24.h,
-                  color: isCompleted
-                      ? colorScheme.primary
-                      : colorScheme.onSurfaceVariant.withOpacity(0.2))
+                width: 2.w,
+                height: 24.h,
+                color: isCompleted
+                    ? colorScheme.primary
+                    : colorScheme.onSurfaceVariant.withOpacity(0.2),
+              )
             else
               SizedBox(height: 24.h),
           ],
@@ -376,8 +431,9 @@ class ReceiptDetailView extends StatelessWidget {
                   title,
                   style: TextStyle(
                     fontSize: 16.sp,
-                    fontWeight:
-                        isCompleted ? FontWeight.normal : FontWeight.w500,
+                    fontWeight: isCompleted
+                        ? FontWeight.normal
+                        : FontWeight.w500,
                     color: isCompleted
                         ? colorScheme.onSurface
                         : colorScheme.onSurfaceVariant,

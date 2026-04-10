@@ -9,6 +9,7 @@ import '../../../core/widgets/custom_inputs/custom_text_field.dart';
 import '../../../core/widgets/custom_buttons/primary_button.dart';
 import '../../../core/widgets/custom_buttons/secondary_button.dart';
 import '../../../core/utils/validators.dart';
+import '../auth_controller/auth_binding.dart';
 import '../auth_controller/auth_controller.dart';
 
 class LoginView extends StatelessWidget {
@@ -19,18 +20,21 @@ class LoginView extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return GetBuilder<AuthController>(
+      tag: authControllerTag,
+      autoRemove: false,
       builder: (controller) => AuthFormScaffold(
         formKey: controller.loginFormKey,
+        autovalidateMode: AutovalidateMode.onUserInteraction,
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             AuthHeader(title: 'Sign in', topSpacing: Get.height * 0.05),
             SizedBox(height: 40.h),
             CustomTextField(
-              hint: 'Email',
-              controller: controller.loginEmailController,
-              keyboardType: TextInputType.emailAddress,
-              validator: Validators.email,
+              hint: 'Phone Number',
+              controller: controller.loginPhoneNumberController,
+              keyboardType: TextInputType.phone,
+              validator: Validators.phone,
             ),
             SizedBox(height: 16.h),
             CustomTextField(

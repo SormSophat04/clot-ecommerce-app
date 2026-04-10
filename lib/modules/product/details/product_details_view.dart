@@ -1,7 +1,13 @@
+import 'dart:convert';
+import 'dart:typed_data';
+
+import 'package:clot_ecommerce_app/core/constants/app_colors.dart';
+import 'package:clot_ecommerce_app/core/constants/app_assets.dart';
+import 'package:clot_ecommerce_app/core/widgets/common/loading_indicator.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:get/get.dart';
-import '../../../core/constants/app_assets.dart';
+
 import 'product_details_controller.dart';
 
 class ProductDetailsView extends GetView<ProductDetailsController> {
@@ -13,22 +19,24 @@ class ProductDetailsView extends GetView<ProductDetailsController> {
       backgroundColor: Colors.transparent,
       isScrollControlled: true,
       builder: (context) {
-        return _PickerSheet(
-          title: 'Size',
-          child: ListView.separated(
-            shrinkWrap: true,
-            itemCount: ProductDetailsController.sizes.length,
-            separatorBuilder: (_, _) => const SizedBox(height: 12),
-            itemBuilder: (context, index) {
-              final size = ProductDetailsController.sizes[index];
-              return Obx(() => _PickerOptionTile(
-                    label: size,
-                    selected: size == controller.selectedSize.value,
-                    onTap: () => Navigator.of(context).pop(size),
-                  ));
-            },
+        return Obx(
+          () => _PickerSheet(
+            title: 'Size',
+            child: ListView.separated(
+              shrinkWrap: true,
+              itemCount: controller.sizes.length,
+              separatorBuilder: (_, _) => const SizedBox(height: 12),
+              itemBuilder: (context, index) {
+                final size = controller.sizes[index];
+                return _PickerOptionTile(
+                  label: size,
+                  selected: size == controller.selectedSize.value,
+                  onTap: () => Navigator.of(context).pop(size),
+                );
+              },
+            ),
+            onClose: () => Navigator.of(context).pop(),
           ),
-          onClose: () => Navigator.of(context).pop(),
         );
       },
     );
@@ -44,17 +52,16 @@ class ProductDetailsView extends GetView<ProductDetailsController> {
       backgroundColor: Colors.transparent,
       isScrollControlled: true,
       builder: (context) {
-        return _PickerSheet(
-          title: 'Color',
-          child: ListView.separated(
-            shrinkWrap: true,
-            itemCount: ProductDetailsController.colorOptions.length,
-            separatorBuilder: (_, _) => const SizedBox(height: 12),
-            itemBuilder: (context, index) {
-              final option = ProductDetailsController.colorOptions[index];
-              return Obx(() {
+        return Obx(
+          () => _PickerSheet(
+            title: 'Color',
+            child: ListView.separated(
+              shrinkWrap: true,
+              itemCount: controller.colorOptions.length,
+              separatorBuilder: (_, _) => const SizedBox(height: 12),
+              itemBuilder: (context, index) {
+                final option = controller.colorOptions[index];
                 final isSelected = controller.selectedColorIndex.value == index;
-
                 return _PickerOptionTile(
                   label: option.name,
                   selected: isSelected,
@@ -74,10 +81,10 @@ class ProductDetailsView extends GetView<ProductDetailsController> {
                     ),
                   ),
                 );
-              });
-            },
+              },
+            ),
+            onClose: () => Navigator.of(context).pop(),
           ),
-          onClose: () => Navigator.of(context).pop(),
         );
       },
     );
@@ -94,22 +101,57 @@ class ProductDetailsView extends GetView<ProductDetailsController> {
     final textTheme = theme.textTheme;
     final isDark = theme.brightness == Brightness.dark;
 
-    final shellBackground =
-        isDark ? const Color(0xFF16171D) : const Color(0xFFD5D5D5);
-    final mutedSurface =
-        isDark ? const Color(0xFF2D2F39) : const Color(0xFFECECEE);
-    final mutedText =
-        isDark ? colorScheme.onSurfaceVariant : const Color(0xFF8B8B90);
+    final shellBackground = isDark
+        ? const Color(0xFF16171D)
+        : AppColors.backgroundColor;
+    final mutedSurface = isDark
+        ? const Color(0xFF2D2F39)
+        : const Color(0xFFECECEE);
+    final mutedText = isDark
+        ? colorScheme.onSurfaceVariant
+        : const Color(0xFF8B8B90);
     final buttonGradient = <Color>[
       colorScheme.primary,
-      isDark ? colorScheme.primary.withOpacity(0.8) : const Color(0xFF7A5ADE),
+      isDark
+          ? colorScheme.primary.withValues(alpha: 0.8)
+          : const Color(0xFF7A5ADE),
     ];
 
     return Scaffold(
       backgroundColor: shellBackground,
       body: SafeArea(
-        child: Center(
-          child: Column(
+        child: Obx(() {
+          final isLoading =
+              controller.isLoading.value && controller.product.value == null;
+          final errorText = controller.errorMessage.value;
+          final hasFatalError =
+              errorText.isNotEmpty && controller.product.value == null;
+
+          if (isLoading) {
+            return const Center(child: LoadingIndicator());
+          }
+
+          if (hasFatalError) {
+            return _ErrorState(
+              message: errorText,
+              onRetry: controller.retry,
+              colorScheme: colorScheme,
+            );
+          }
+
+          final galleryImages = controller.displayGalleryImages;
+          final colorOptions = controller.colorOptions;
+          final safeColorIndex = colorOptions.isEmpty
+              ? 0
+              : controller.selectedColorIndex.value.clamp(
+                  0,
+                  colorOptions.length - 1,
+                );
+          final selectedColor = colorOptions.isEmpty
+              ? null
+              : colorOptions[safeColorIndex];
+
+          return Column(
             children: [
               Padding(
                 padding: EdgeInsets.symmetric(horizontal: 16.w),
@@ -125,45 +167,58 @@ class ProductDetailsView extends GetView<ProductDetailsController> {
                       ),
                     ),
                     const Spacer(),
-                    Obx(() => _RoundIconAction(
-                          onTap: controller.toggleWishlist,
-                          backgroundColor: mutedSurface,
-                          icon: Image.asset(
-                            AppAssets.heart,
-                            width: 18.w,
-                            color: controller.isWishlisted.value
-                                ? colorScheme.primary
-                                : colorScheme.onSurface,
-                          ),
-                        )),
+                    _RoundIconAction(
+                      onTap: controller.toggleWishlist,
+                      backgroundColor: mutedSurface,
+                      icon: Image.asset(
+                        AppAssets.heart,
+                        width: 18.w,
+                        color: controller.isWishlisted.value
+                            ? colorScheme.primary
+                            : colorScheme.onSurface,
+                      ),
+                    ),
                   ],
                 ),
               ),
-                      SizedBox(height: 18.h),
-                      Expanded(
-                        child: SingleChildScrollView(
+              SizedBox(height: 18.h),
+              Expanded(
+                child: SingleChildScrollView(
+                  physics: const BouncingScrollPhysics(),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      SizedBox(
+                        height: 380.h,
+                        child: ListView.separated(
                           physics: const BouncingScrollPhysics(),
-                          child: Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              SizedBox(
-                                height: 380.h,
-                                child: ListView.separated(
-                                  physics: const BouncingScrollPhysics(),
-                                  scrollDirection: Axis.horizontal,
-                                  padding: EdgeInsets.symmetric(horizontal: 16.w),
-                                  itemCount: ProductDetailsController.galleryColors.length,
-                                  separatorBuilder: (_, _) => SizedBox(width: 10.w),
-                                  itemBuilder: (context, index) => _GalleryCard(
-                                      tint:
-                                          ProductDetailsController.galleryColors[index]),
-                                ),
-                              ),
-                              SizedBox(height: 18.h),
+                          scrollDirection: Axis.horizontal,
+                          padding: EdgeInsets.symmetric(horizontal: 16.w),
+                          itemCount: galleryImages.isEmpty
+                              ? ProductDetailsController
+                                    .fallbackGalleryColors
+                                    .length
+                              : galleryImages.length,
+                          separatorBuilder: (_, _) => SizedBox(width: 10.w),
+                          itemBuilder: (context, index) {
+                            final tint =
+                                ProductDetailsController
+                                    .fallbackGalleryColors[index %
+                                    ProductDetailsController
+                                        .fallbackGalleryColors
+                                        .length];
+                            final image = galleryImages.isEmpty
+                                ? null
+                                : galleryImages[index];
+                            return _GalleryCard(image: image, tint: tint);
+                          },
+                        ),
+                      ),
+                      SizedBox(height: 18.h),
                       Padding(
                         padding: EdgeInsets.symmetric(horizontal: 16.w),
                         child: Text(
-                          ProductDetailsController.productName,
+                          controller.productName,
                           style: textTheme.titleLarge?.copyWith(
                             fontSize: 24.sp,
                             fontWeight: FontWeight.w800,
@@ -175,13 +230,27 @@ class ProductDetailsView extends GetView<ProductDetailsController> {
                       SizedBox(height: 8.h),
                       Padding(
                         padding: EdgeInsets.symmetric(horizontal: 16.w),
-                        child: Text(
-                          ProductDetailsController.priceLabel,
-                          style: textTheme.headlineSmall?.copyWith(
-                            color: colorScheme.primary,
-                            fontSize: 24.sp,
-                            fontWeight: FontWeight.w800,
-                          ),
+                        child: Row(
+                          children: [
+                            Text(
+                              controller.priceLabel,
+                              style: textTheme.headlineSmall?.copyWith(
+                                color: colorScheme.primary,
+                                fontSize: 24.sp,
+                                fontWeight: FontWeight.w800,
+                              ),
+                            ),
+                            if (controller.oldPriceLabel != null) ...[
+                              SizedBox(width: 10.w),
+                              Text(
+                                controller.oldPriceLabel!,
+                                style: textTheme.bodyLarge?.copyWith(
+                                  color: colorScheme.onSurfaceVariant,
+                                  decoration: TextDecoration.lineThrough,
+                                ),
+                              ),
+                            ],
+                          ],
                         ),
                       ),
                       SizedBox(height: 20.h),
@@ -196,13 +265,13 @@ class ProductDetailsView extends GetView<ProductDetailsController> {
                             child: Row(
                               mainAxisSize: MainAxisSize.min,
                               children: [
-                                Obx(() => Text(
-                                      controller.selectedSize.value,
-                                      style: textTheme.titleMedium?.copyWith(
-                                        fontWeight: FontWeight.w700,
-                                        color: colorScheme.onSurface,
-                                      ),
-                                    )),
+                                Text(
+                                  controller.selectedSize.value,
+                                  style: textTheme.titleMedium?.copyWith(
+                                    fontWeight: FontWeight.w700,
+                                    color: colorScheme.onSurface,
+                                  ),
+                                ),
                                 SizedBox(width: 10.w),
                                 Icon(
                                   Icons.keyboard_arrow_down_rounded,
@@ -225,33 +294,28 @@ class ProductDetailsView extends GetView<ProductDetailsController> {
                             child: Row(
                               mainAxisSize: MainAxisSize.min,
                               children: [
-                                Obx(() => Text(
-                                      ProductDetailsController
-                                          .colorOptions[controller
-                                              .selectedColorIndex.value]
-                                          .name,
-                                      style: textTheme.titleMedium?.copyWith(
-                                        fontWeight: FontWeight.w700,
-                                        color: colorScheme.onSurface,
-                                      ),
-                                    )),
+                                Text(
+                                  selectedColor?.name ?? '-',
+                                  style: textTheme.titleMedium?.copyWith(
+                                    fontWeight: FontWeight.w700,
+                                    color: colorScheme.onSurface,
+                                  ),
+                                ),
                                 SizedBox(width: 8.w),
-                                Obx(() => Container(
-                                      width: 20.w,
-                                      height: 20.h,
-                                      decoration: BoxDecoration(
-                                        shape: BoxShape.circle,
-                                        color: ProductDetailsController
-                                            .colorOptions[controller
-                                                .selectedColorIndex.value]
-                                            .color,
-                                        border: Border.all(
-                                          color: colorScheme.outline.withValues(
-                                            alpha: 0.35,
-                                          ),
+                                if (selectedColor != null)
+                                  Container(
+                                    width: 20.w,
+                                    height: 20.h,
+                                    decoration: BoxDecoration(
+                                      shape: BoxShape.circle,
+                                      color: selectedColor.color,
+                                      border: Border.all(
+                                        color: colorScheme.outline.withValues(
+                                          alpha: 0.35,
                                         ),
                                       ),
-                                    )),
+                                    ),
+                                  ),
                                 SizedBox(width: 10.w),
                                 Icon(
                                   Icons.keyboard_arrow_down_rounded,
@@ -274,13 +338,13 @@ class ProductDetailsView extends GetView<ProductDetailsController> {
                               onTap: () => controller.updateQuantity(-1),
                             ),
                             SizedBox(width: 12.w),
-                            Obx(() => Text(
-                                  '${controller.quantity.value}',
-                                  style: textTheme.titleMedium?.copyWith(
-                                    fontWeight: FontWeight.w700,
-                                    color: colorScheme.onSurface,
-                                  ),
-                                )),
+                            Text(
+                              '${controller.quantity.value}',
+                              style: textTheme.titleMedium?.copyWith(
+                                fontWeight: FontWeight.w700,
+                                color: colorScheme.onSurface,
+                              ),
+                            ),
                             SizedBox(width: 12.w),
                             _QuantityAction(
                               icon: Icons.add,
@@ -293,7 +357,7 @@ class ProductDetailsView extends GetView<ProductDetailsController> {
                       Padding(
                         padding: EdgeInsets.symmetric(horizontal: 16.w),
                         child: Text(
-                          ProductDetailsController.description,
+                          controller.description,
                           style: textTheme.bodyMedium?.copyWith(
                             fontSize: 15.sp,
                             color: mutedText,
@@ -301,18 +365,59 @@ class ProductDetailsView extends GetView<ProductDetailsController> {
                           ),
                         ),
                       ),
+                      SizedBox(height: 12.h),
                     ],
                   ),
                 ),
               ),
-              SizedBox(height: 14.h),
               _AddToBagButton(
-                priceLabel: ProductDetailsController.priceLabel,
+                priceLabel: controller.priceLabel,
                 gradient: buttonGradient,
+                isLoading: controller.isAddingToBag.value,
                 onTap: controller.addToBag,
               ),
+              SizedBox(height: 14.h),
             ],
-          ),
+          );
+        }),
+      ),
+    );
+  }
+}
+
+class _ErrorState extends StatelessWidget {
+  const _ErrorState({
+    required this.message,
+    required this.onRetry,
+    required this.colorScheme,
+  });
+
+  final String message;
+  final VoidCallback onRetry;
+  final ColorScheme colorScheme;
+
+  @override
+  Widget build(BuildContext context) {
+    return Center(
+      child: Padding(
+        padding: EdgeInsets.symmetric(horizontal: 24.w),
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Icon(
+              Icons.error_outline_rounded,
+              color: colorScheme.error,
+              size: 48.sp,
+            ),
+            SizedBox(height: 12.h),
+            Text(
+              message,
+              textAlign: TextAlign.center,
+              style: Theme.of(context).textTheme.bodyMedium,
+            ),
+            SizedBox(height: 14.h),
+            FilledButton(onPressed: onRetry, child: const Text('Try Again')),
+          ],
         ),
       ),
     );
@@ -335,9 +440,7 @@ class _PickerSheet extends StatelessWidget {
     final theme = Theme.of(context);
     final colorScheme = theme.colorScheme;
     final isDark = theme.brightness == Brightness.dark;
-    final surface = isDark
-        ? const Color(0xFF20222B)
-        : const Color(0xFFF7F7F7);
+    final surface = isDark ? const Color(0xFF20222B) : const Color(0xFFF7F7F7);
 
     return Container(
       constraints: BoxConstraints(
@@ -375,7 +478,10 @@ class _PickerSheet extends StatelessWidget {
                       child: Ink(
                         width: 40.w,
                         height: 40.h,
-                        child: Icon(Icons.close_rounded, color: colorScheme.onSurface),
+                        child: Icon(
+                          Icons.close_rounded,
+                          color: colorScheme.onSurface,
+                        ),
                       ),
                     ),
                   ),
@@ -409,7 +515,10 @@ class _PickerOptionTile extends StatelessWidget {
     final theme = Theme.of(context);
     final colorScheme = theme.colorScheme;
     final isDark = theme.brightness == Brightness.dark;
-    final unselectedColor = isDark ? const Color(0xFF2D2F39) : const Color(0xFFECECEE);
+    final trailingWidget = trailing;
+    final unselectedColor = isDark
+        ? const Color(0xFF2D2F39)
+        : const Color(0xFFECECEE);
 
     return Material(
       color: Colors.transparent,
@@ -426,7 +535,9 @@ class _PickerOptionTile extends StatelessWidget {
                 ? LinearGradient(
                     colors: <Color>[
                       colorScheme.primary,
-                      isDark ? colorScheme.primary.withOpacity(0.8) : const Color(0xFF7A5ADE),
+                      isDark
+                          ? colorScheme.primary.withValues(alpha: 0.8)
+                          : const Color(0xFF7A5ADE),
                     ],
                   )
                 : null,
@@ -437,15 +548,23 @@ class _PickerOptionTile extends StatelessWidget {
                 child: Text(
                   label,
                   style: theme.textTheme.titleLarge?.copyWith(
-                        fontWeight: FontWeight.w600,
-                        color: selected ? colorScheme.onPrimary : colorScheme.onSurface,
-                      ),
+                    fontWeight: FontWeight.w600,
+                    color: selected
+                        ? colorScheme.onPrimary
+                        : colorScheme.onSurface,
+                  ),
                 ),
               ),
-              if (trailing != null) trailing!,
+              ...?(trailingWidget != null ? <Widget>[trailingWidget] : null),
               if (selected) ...[
-                if (trailing != null) SizedBox(width: 14.w),
-                Icon(Icons.check_rounded, color: colorScheme.onPrimary, size: 24.sp),
+                ...?(trailingWidget != null
+                    ? <Widget>[SizedBox(width: 14.w)]
+                    : null),
+                Icon(
+                  Icons.check_rounded,
+                  color: colorScheme.onPrimary,
+                  size: 24.sp,
+                ),
               ],
             ],
           ),
@@ -488,12 +607,19 @@ class _RoundIconAction extends StatelessWidget {
 }
 
 class _GalleryCard extends StatelessWidget {
-  const _GalleryCard({required this.tint});
+  const _GalleryCard({required this.tint, this.image});
 
   final Color tint;
+  final String? image;
 
   @override
   Widget build(BuildContext context) {
+    final parsed = image?.trim();
+    final imageBytes = parsed == null ? null : _decodeImage(parsed);
+    final isNetworkImage =
+        parsed != null &&
+        (parsed.startsWith('http://') || parsed.startsWith('https://'));
+
     return ClipRRect(
       borderRadius: BorderRadius.circular(14.r),
       child: Container(
@@ -509,6 +635,7 @@ class _GalleryCard extends StatelessWidget {
           ),
         ),
         child: Stack(
+          fit: StackFit.expand,
           children: [
             Positioned(
               bottom: -54.h,
@@ -533,15 +660,41 @@ class _GalleryCard extends StatelessWidget {
                 child: Image.asset(AppAssets.logo, width: 23.w, height: 23.h),
               ),
             ),
-            Center(
-              child: Icon(
-                Icons.checkroom_rounded,
-                size: 86.sp,
-                color: Colors.white.withValues(alpha: 0.82),
-              ),
-            ),
+            if (isNetworkImage)
+              Image.network(
+                parsed,
+                fit: BoxFit.cover,
+                errorBuilder: (_, _, _) => _fallbackIcon(),
+              )
+            else if (imageBytes != null)
+              Image.memory(
+                imageBytes,
+                fit: BoxFit.cover,
+                errorBuilder: (_, _, _) => _fallbackIcon(),
+              )
+            else
+              _fallbackIcon(),
           ],
         ),
+      ),
+    );
+  }
+
+  Uint8List? _decodeImage(String raw) {
+    try {
+      final base64Payload = raw.contains(',') ? raw.split(',').last : raw;
+      return base64Decode(base64Payload);
+    } catch (_) {
+      return null;
+    }
+  }
+
+  Widget _fallbackIcon() {
+    return Center(
+      child: Icon(
+        Icons.checkroom_rounded,
+        size: 86.sp,
+        color: Colors.white.withValues(alpha: 0.82),
       ),
     );
   }
@@ -620,11 +773,13 @@ class _AddToBagButton extends StatelessWidget {
   const _AddToBagButton({
     required this.priceLabel,
     required this.gradient,
+    required this.isLoading,
     required this.onTap,
   });
 
   final String priceLabel;
   final List<Color> gradient;
+  final bool isLoading;
   final VoidCallback onTap;
 
   @override
@@ -643,7 +798,7 @@ class _AddToBagButton extends StatelessWidget {
         child: Material(
           color: Colors.transparent,
           child: InkWell(
-            onTap: onTap,
+            onTap: isLoading ? null : onTap,
             borderRadius: BorderRadius.circular(30.r),
             child: Padding(
               padding: EdgeInsets.symmetric(horizontal: 22.w, vertical: 16.h),
@@ -657,8 +812,20 @@ class _AddToBagButton extends StatelessWidget {
                     ),
                   ),
                   const Spacer(),
+                  if (isLoading)
+                    SizedBox(
+                      width: 18.w,
+                      height: 18.h,
+                      child: CircularProgressIndicator(
+                        strokeWidth: 2.2,
+                        valueColor: AlwaysStoppedAnimation<Color>(
+                          colorScheme.onPrimary,
+                        ),
+                      ),
+                    ),
+                  if (isLoading) SizedBox(width: 10.w),
                   Text(
-                    'Add to Bag',
+                    isLoading ? 'Adding...' : 'Add to Bag',
                     style: textTheme.titleMedium?.copyWith(
                       color: colorScheme.onPrimary,
                       fontWeight: FontWeight.w600,

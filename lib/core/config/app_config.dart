@@ -10,7 +10,7 @@ class AppConfig {
     switch (f) {
       case FlavorType.dev:
         envConfig = const EnvConfig(
-          apiBaseUrl: "https://api.dev.clot.com",
+          apiBaseUrl: "http://10.0.2.2:8080",
           appName: "Clot Dev",
           enbaleLog: true,
         );

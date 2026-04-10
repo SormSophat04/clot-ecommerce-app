@@ -5,30 +5,88 @@ import '../../core/network/api_client.dart';
 import '../../core/network/api_constants.dart';
 
 class AuthRepository extends GetxService {
-  final ApiClient _apiClient;
-  final StorageService _storageService;
+  final ApiClient _apiClient = Get.find<ApiClient>();
+  final StorageService _storageService = Get.find<StorageService>();
 
-  AuthRepository(this._apiClient, this._storageService);
+  Map<String, dynamic> _asMap(dynamic data) {
+    if (data is Map<String, dynamic>) return data;
+    if (data is Map) return Map<String, dynamic>.from(data);
+    throw Exception('Invalid server response format');
+  }
+
+  Map<String, dynamic> _authPayload(dynamic rawData) {
+    final root = _asMap(rawData);
+    final nested = root['data'];
+    if (nested is Map) {
+      return Map<String, dynamic>.from(nested);
+    }
+    return root;
+  }
+
+  String _extractToken(
+    Map<String, dynamic> rootData,
+    Map<String, dynamic> payloadData, {
+    String? headerAuthorization,
+  }) {
+    final tokenKeys = <String>[
+      'token',
+      'accessToken',
+      'access_token',
+      'jwt',
+      'idToken',
+    ];
+
+    for (final key in tokenKeys) {
+      final raw = payloadData[key] ?? rootData[key];
+      if (raw is String && raw.trim().isNotEmpty) {
+        return raw.trim();
+      }
+    }
+
+    if (headerAuthorization != null && headerAuthorization.trim().isNotEmpty) {
+      final normalized = headerAuthorization.trim();
+      if (normalized.toLowerCase().startsWith('bearer ')) {
+        final bearerToken = normalized.substring(7).trim();
+        if (bearerToken.isNotEmpty) {
+          return bearerToken;
+        }
+      }
+      return normalized;
+    }
+
+    throw Exception(
+      'Server response is missing a valid auth token (checked token/accessToken/access_token/jwt/idToken and Authorization header)',
+    );
+  }
 
   /// Login with email and password
-  Future<Map<String, dynamic>> login(String email, String password) async {
+  Future<Map<String, dynamic>> login(String phoneNumber, String password) async {
     try {
       final response = await _apiClient.post(
-        ApiConstants.login,
-        data: {
-          'email': email,
+        ApiConstants.login, {
+          'phoneNumber': phoneNumber,
           'password': password,
         },
       );
 
       if (response.statusCode == 200) {
-        final data = response.data;
+        final data = _asMap(response.data);
+        final payload = _authPayload(response.data);
+        final authHeader = response.headers.value('authorization');
+        final token = _extractToken(
+          data,
+          payload,
+          headerAuthorization: authHeader,
+        );
         // Save token
-        await _storageService.saveToken(data['token']);
-        _apiClient.setToken(data['token']);
+        await _storageService.saveToken(token);
+        _apiClient.setToken(token);
         // Save user data
-        if (data['user'] != null) {
-          await _storageService.saveUserData(data['user']);
+        final userRaw = payload['user'] ?? data['user'];
+        if (userRaw is Map) {
+          await _storageService.saveUserData(
+            Map<String, dynamic>.from(userRaw),
+          );
         }
         return data;
       } else {
@@ -41,30 +99,39 @@ class AuthRepository extends GetxService {
 
   /// Register new user
   Future<Map<String, dynamic>> register({
-    required String name,
+    required String username,
     required String email,
     required String password,
-    String? phone,
+    required String phoneNumber,
   }) async {
     try {
       final response = await _apiClient.post(
-        ApiConstants.register,
-        data: {
-          'name': name,
+        ApiConstants.register, {
+          'username': username,
+          'phoneNumber': phoneNumber,
           'email': email,
           'password': password,
-          'phone': phone,
         },
       );
 
-      if (response.statusCode == 201) {
-        final data = response.data;
+      if (response.statusCode == 200 || response.statusCode == 201) {
+        final data = _asMap(response.data);
+        final payload = _authPayload(response.data);
+        final authHeader = response.headers.value('authorization');
+        final token = _extractToken(
+          data,
+          payload,
+          headerAuthorization: authHeader,
+        );
         // Save token
-        await _storageService.saveToken(data['token']);
-        _apiClient.setToken(data['token']);
+        await _storageService.saveToken(token);
+        _apiClient.setToken(token);
         // Save user data
-        if (data['user'] != null) {
-          await _storageService.saveUserData(data['user']);
+        final userRaw = payload['user'] ?? data['user'];
+        if (userRaw is Map) {
+          await _storageService.saveUserData(
+            Map<String, dynamic>.from(userRaw),
+          );
         }
         return data;
       } else {
@@ -78,7 +145,7 @@ class AuthRepository extends GetxService {
   /// Logout current user
   Future<void> logout() async {
     try {
-      await _apiClient.post(ApiConstants.logout);
+      await _apiClient.post(ApiConstants.logout, {});
     } finally {
       // Clear local data regardless of API response
       _apiClient.clearToken();
@@ -90,7 +157,7 @@ class AuthRepository extends GetxService {
   Future<void> forgotPassword(String email) async {
     try {
       final response = await _apiClient.post(
-        ApiConstants.forgotPassword,
+        ApiConstants.forgotPassword, {},
         data: {'email': email},
       );
 

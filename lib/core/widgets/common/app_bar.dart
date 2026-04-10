@@ -36,8 +36,9 @@ class CustomAppBar extends StatelessWidget implements PreferredSizeWidget {
       child: PreferredSize(
         preferredSize: preferredSize,
         child: Padding(
-          padding: EdgeInsets.only(top: 14.h),
+          padding: EdgeInsets.symmetric(horizontal: 16.w),
           child: Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
               if (showBackButton)
                 GestureDetector(
@@ -45,7 +46,6 @@ class CustomAppBar extends StatelessWidget implements PreferredSizeWidget {
                   child: Container(
                     height: 40.h,
                     width: 40.w,
-                    margin: EdgeInsets.only(left: 16.w),
                     padding: EdgeInsets.all(8.r),
                     decoration: BoxDecoration(
                       color: effectiveBackButtonColor,
@@ -59,48 +59,21 @@ class CustomAppBar extends StatelessWidget implements PreferredSizeWidget {
                     ),
                   ),
                 ),
-              SizedBox(width: showBackButton ? 16.w : 0),
               if (title != null)
                 Text(
                   title!,
                   style: TextStyle(
                     color: effectiveTitleColor,
-                    fontSize: 18.sp,
+                    fontSize: 20.sp,
                     fontWeight: FontWeight.w600,
                   ),
                 ),
-              const Spacer(),
               if (actions != null) ...actions!,
             ],
           ),
         ),
       ),
     );
-    // AppBar(
-    //   leading:
-    //       leading ??
-    //       (showBackButton
-    //           ? IconButton(
-    //               icon: const Icon(Icons.arrow_back_ios_new, size: 20),
-    //               onPressed: () => Get.back(),
-    //             )
-    //           : null),
-    //   title: title != null
-    //       ? Text(
-    //           title!,
-    //           style: TextStyle(
-    //             color: titleColor ?? AppColors.onBackgroundColor,
-    //             fontSize: 18,
-    //             fontWeight: FontWeight.w600,
-    //           ),
-    //         )
-    //       : null,
-    //   actions: actions,
-    //   backgroundColor: backgroundColor ?? Colors.transparent,
-    //   elevation: elevation ?? 0,
-    //   centerTitle: true,
-    //   bottom: bottom,
-    // );
   }
 
   @override

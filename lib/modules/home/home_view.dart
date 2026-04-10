@@ -1,5 +1,7 @@
-
 import 'package:clot_ecommerce_app/core/routes/app_routes.dart';
+import 'package:clot_ecommerce_app/core/widgets/common/loading_indicator.dart';
+import 'package:clot_ecommerce_app/core/widgets/common/skeleton_loader.dart';
+import 'package:clot_ecommerce_app/data/models/product_model.dart';
 import 'package:clot_ecommerce_app/modules/home/home_controller.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
@@ -8,7 +10,8 @@ import 'widgets/home_app_bar_widgets.dart';
 import 'widgets/home_search_bar.dart';
 import 'widgets/section_header.dart';
 import 'widgets/categories_row.dart';
-import 'widgets/product_list.dart';// ---------------------------------------------------------------------------
+import 'widgets/product_list.dart';
+// ---------------------------------------------------------------------------
 // HomeView
 // ---------------------------------------------------------------------------
 
@@ -46,13 +49,13 @@ class HomeView extends StatelessWidget {
               onSeeAll: () => Get.toNamed(Routes.categories),
             ),
             SizedBox(height: 16.h),
-            CategoriesRow(
-              categories: controller.categories,
-              textTheme: textTheme,
-              colors: colors,
-              mutedSurface: surfaceMuted,
-              onCategoryTap: (category) =>
-                  Get.toNamed(Routes.categories, arguments: category.label),
+            Obx(
+              () => _buildCategoriesSection(
+                controller: controller,
+                textTheme: textTheme,
+                colors: colors,
+                mutedSurface: surfaceMuted,
+              ),
             ),
             SizedBox(height: 28.h),
 
@@ -64,12 +67,21 @@ class HomeView extends StatelessWidget {
               onSeeAll: () => Get.toNamed(Routes.product),
             ),
             SizedBox(height: 16.h),
-            ProductList(
-              products: controller.topSelling,
-              controller: controller,
-              textTheme: textTheme,
-              colors: colors,
-              mutedSurface: surfaceMuted,
+            Obx(
+              () => _buildHomeProductSection(
+                products: controller.topSelling.toList(),
+                isLoading:
+                    controller.isLoadingProducts.value &&
+                    controller.topSelling.isEmpty &&
+                    controller.newIn.isEmpty,
+                error: controller.productsError.value,
+                onRetry: controller.fetchHomeProducts,
+                controller: controller,
+                textTheme: textTheme,
+                colors: colors,
+                mutedSurface: surfaceMuted,
+                emptyMessage: 'No top selling products yet.',
+              ),
             ),
             SizedBox(height: 28.h),
 
@@ -82,12 +94,21 @@ class HomeView extends StatelessWidget {
               onSeeAll: () => Get.toNamed(Routes.product),
             ),
             SizedBox(height: 16.h),
-            ProductList(
-              products: controller.newIn,
-              controller: controller,
-              textTheme: textTheme,
-              colors: colors,
-              mutedSurface: surfaceMuted,
+            Obx(
+              () => _buildHomeProductSection(
+                products: controller.newIn.toList(),
+                isLoading:
+                    controller.isLoadingProducts.value &&
+                    controller.topSelling.isEmpty &&
+                    controller.newIn.isEmpty,
+                error: controller.productsError.value,
+                onRetry: controller.fetchHomeProducts,
+                controller: controller,
+                textTheme: textTheme,
+                colors: colors,
+                mutedSurface: surfaceMuted,
+                emptyMessage: 'No new products right now.',
+              ),
             ),
             SizedBox(height: 24.h),
           ],
@@ -128,5 +149,117 @@ class HomeView extends StatelessWidget {
       ],
     );
   }
-}
 
+  Widget _buildHomeProductSection({
+    required List<ProductModel> products,
+    required bool isLoading,
+    required String error,
+    required VoidCallback onRetry,
+    required HomeController controller,
+    required TextTheme textTheme,
+    required ColorScheme colors,
+    required Color mutedSurface,
+    required String emptyMessage,
+  }) {
+    if (isLoading) {
+      return const HomeProductListSkeleton();
+    }
+
+    if (error.isNotEmpty && products.isEmpty) {
+      return Container(
+        width: double.infinity,
+        margin: EdgeInsets.symmetric(horizontal: 16.w),
+        padding: EdgeInsets.all(14.r),
+        decoration: BoxDecoration(
+          color: colors.errorContainer.withValues(alpha: 0.5),
+          borderRadius: BorderRadius.circular(16.r),
+        ),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text(
+              error,
+              style: textTheme.bodyMedium?.copyWith(color: colors.onSurface),
+            ),
+            SizedBox(height: 8.h),
+            Align(
+              alignment: Alignment.centerLeft,
+              child: TextButton(onPressed: onRetry, child: const Text('Retry')),
+            ),
+          ],
+        ),
+      );
+    }
+
+    if (products.isEmpty) {
+      return Padding(
+        padding: EdgeInsets.symmetric(horizontal: 16.w),
+        child: Text(
+          emptyMessage,
+          style: textTheme.bodyMedium?.copyWith(color: colors.onSurfaceVariant),
+        ),
+      );
+    }
+
+    return ProductList(
+      products: products,
+      controller: controller,
+      textTheme: textTheme,
+      colors: colors,
+      mutedSurface: mutedSurface,
+    );
+  }
+
+  Widget _buildCategoriesSection({
+    required HomeController controller,
+    required TextTheme textTheme,
+    required ColorScheme colors,
+    required Color mutedSurface,
+  }) {
+    final categories = controller.categories.toList();
+    final loading = controller.isLoadingCategories.value;
+    final error = controller.categoriesError.value;
+
+    if (loading && categories.isEmpty) {
+      return const CategoriesRowSkeleton();
+    }
+
+    if (categories.isEmpty) {
+      return Padding(
+        padding: EdgeInsets.symmetric(horizontal: 16.w),
+        child: Text(
+          error.isEmpty ? 'No categories available.' : error,
+          style: textTheme.bodyMedium?.copyWith(color: colors.onSurfaceVariant),
+        ),
+      );
+    }
+
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        if (error.isNotEmpty)
+          Padding(
+            padding: EdgeInsets.symmetric(horizontal: 16.w),
+            child: Text(
+              error,
+              style: textTheme.bodySmall?.copyWith(color: colors.error),
+            ),
+          ),
+        if (error.isNotEmpty) SizedBox(height: 8.h),
+        CategoriesRow(
+          categories: categories,
+          textTheme: textTheme,
+          colors: colors,
+          mutedSurface: mutedSurface,
+          onCategoryTap: (category) => Get.toNamed(
+            Routes.product,
+            arguments: <String, dynamic>{
+              'categoryId': category.id,
+              'category': category.label,
+            },
+          ),
+        ),
+      ],
+    );
+  }
+}

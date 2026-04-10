@@ -1,5 +1,6 @@
 import 'package:clot_ecommerce_app/core/constants/app_assets.dart';
-import 'package:clot_ecommerce_app/core/constants/app_colors.dart';
+import 'package:clot_ecommerce_app/core/routes/app_routes.dart';
+import 'package:clot_ecommerce_app/data/sources/local/storage_service.dart';
 import 'package:clot_ecommerce_app/modules/home/home_view.dart';
 import 'package:clot_ecommerce_app/modules/notifications/notifications_view.dart';
 import 'package:clot_ecommerce_app/modules/profile/profile_view.dart';
@@ -96,5 +97,19 @@ class MainLayoutView extends GetView<MainLayoutController> {
         ),
       );
     });
+  }
+}
+
+class MainLayoutMiddleware extends GetMiddleware {
+  @override
+  int? get priority => 1;
+
+  @override
+  RouteSettings? redirect(String? route) {
+    final storageService = Get.find<StorageService>();
+    if (!storageService.isLoggedIn) {
+      return const RouteSettings(name: Routes.login);
+    }
+    return null;
   }
 }
