@@ -48,61 +48,105 @@ class SplashView extends StatelessWidget {
             SizedBox(height: 16.h),
             Padding(
               padding: EdgeInsets.symmetric(horizontal: 24.w),
-              child: Obx(() => Row(
-                children: [
-                  Expanded(
-                    child: GestureDetector(
-                      onTap: () => controller.setGender('Men'),
-                      child: Container(
-                        height: 56.h,
-                        decoration: BoxDecoration(
-                          color: controller.selectedGender.value == 'Men'
-                              ? colorScheme.primary
-                              : inputFillColor,
-                          borderRadius: BorderRadius.circular(30.r),
+              child: GestureDetector(
+                onTap: () {
+                  Get.bottomSheet(
+                    Container(
+                      padding: EdgeInsets.all(24.r),
+                      decoration: BoxDecoration(
+                        color: colorScheme.surface,
+                        borderRadius: BorderRadius.only(
+                          topLeft: Radius.circular(30.r),
+                          topRight: Radius.circular(30.r),
                         ),
-                        alignment: Alignment.center,
-                        child: Text(
-                          'Men',
-                          style: TextStyle(
-                            color: controller.selectedGender.value == 'Men'
-                                ? colorScheme.onPrimary
-                                : colorScheme.onSurface,
-                            fontSize: 16.sp,
-                            fontWeight: FontWeight.w600,
-                          ),
+                      ),
+                      child: SafeArea(
+                        child: Column(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            Container(
+                              width: 40.w,
+                              height: 4.h,
+                              decoration: BoxDecoration(
+                                color: colorScheme.outline.withValues(alpha: 0.4),
+                                borderRadius: BorderRadius.circular(2.r),
+                              ),
+                            ),
+                            SizedBox(height: 24.h),
+                            Text(
+                              'Who do you shop for ?',
+                              style: TextStyle(
+                                fontSize: 20.sp,
+                                fontWeight: FontWeight.bold,
+                                color: colorScheme.onSurface,
+                              ),
+                            ),
+                            SizedBox(height: 24.h),
+                            Obx(() => Column(
+                                  children: ['Men', 'Women', 'Kids']
+                                      .map((type) => GestureDetector(
+                                            onTap: () {
+                                              controller.setType(type);
+                                              Get.back();
+                                            },
+                                            child: Container(
+                                              width: double.infinity,
+                                              padding: EdgeInsets.symmetric(vertical: 16.h),
+                                              margin: EdgeInsets.only(bottom: 12.h),
+                                              decoration: BoxDecoration(
+                                                color: controller.selectedType.value == type
+                                                    ? colorScheme.primary
+                                                    : inputFillColor,
+                                                borderRadius: BorderRadius.circular(30.r),
+                                              ),
+                                              alignment: Alignment.center,
+                                              child: Text(
+                                                type,
+                                                style: TextStyle(
+                                                  fontSize: 16.sp,
+                                                  fontWeight: FontWeight.w600,
+                                                  color: controller.selectedType.value == type
+                                                      ? colorScheme.onPrimary
+                                                      : colorScheme.onSurface,
+                                                ),
+                                              ),
+                                            ),
+                                          ))
+                                      .toList(),
+                                )),
+                          ],
                         ),
                       ),
                     ),
+                    backgroundColor: Colors.transparent,
+                    isScrollControlled: true,
+                  );
+                },
+                child: Container(
+                  height: 56.h,
+                  padding: EdgeInsets.symmetric(horizontal: 20.w),
+                  decoration: BoxDecoration(
+                    color: inputFillColor,
+                    borderRadius: BorderRadius.circular(30.r),
                   ),
-                  SizedBox(width: 16.w),
-                  Expanded(
-                    child: GestureDetector(
-                      onTap: () => controller.setGender('Women'),
-                      child: Container(
-                        height: 56.h,
-                        decoration: BoxDecoration(
-                          color: controller.selectedGender.value == 'Women'
-                              ? colorScheme.primary
-                              : inputFillColor,
-                          borderRadius: BorderRadius.circular(30.r),
-                        ),
-                        alignment: Alignment.center,
-                        child: Text(
-                          'Women',
-                          style: TextStyle(
-                            color: controller.selectedGender.value == 'Women'
-                                ? colorScheme.onPrimary
-                                : colorScheme.onSurface,
-                            fontSize: 16.sp,
-                            fontWeight: FontWeight.w600,
-                          ),
-                        ),
+                  child: Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      Obx(() => Text(
+                            controller.selectedType.value,
+                            style: TextStyle(
+                              fontSize: 15.sp,
+                              color: colorScheme.onSurface,
+                            ),
+                          )),
+                      Icon(
+                        Icons.keyboard_arrow_down,
+                        color: colorScheme.onSurfaceVariant,
                       ),
-                    ),
+                    ],
                   ),
-                ],
-              )),
+                ),
+              ),
             ),
             SizedBox(height: 48.h),
             Padding(
@@ -139,7 +183,7 @@ class SplashView extends StatelessWidget {
                               width: 40.w,
                               height: 4.h,
                               decoration: BoxDecoration(
-                                color: colorScheme.outline.withOpacity(0.4),
+                                color: colorScheme.outline.withValues(alpha: 0.4),
                                 borderRadius: BorderRadius.circular(2.r),
                               ),
                             ),

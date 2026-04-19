@@ -54,20 +54,36 @@ class AuthRepository extends GetxService {
       return normalized;
     }
 
-    throw Exception(
-      'Server response is missing a valid auth token (checked token/accessToken/access_token/jwt/idToken and Authorization header)',
-    );
+    throw Exception('Server response is missing a valid auth token');
+  }
+
+  String? _tryExtractToken(
+    Map<String, dynamic> rootData,
+    Map<String, dynamic> payloadData, {
+    String? headerAuthorization,
+  }) {
+    try {
+      return _extractToken(
+        rootData,
+        payloadData,
+        headerAuthorization: headerAuthorization,
+      );
+    } catch (_) {
+      return null;
+    }
   }
 
   /// Login with email and password
-  Future<Map<String, dynamic>> login(String phoneNumber, String password) async {
+  Future<Map<String, dynamic>> login(
+    String phoneNumber,
+    String password,
+  ) async {
     try {
-      final response = await _apiClient.post(
-        ApiConstants.login, {
-          'phoneNumber': phoneNumber,
-          'password': password,
-        },
-      );
+      final response = await _apiClient.post(ApiConstants.login, {
+        'phoneNumber': phoneNumber,
+        'password': password,
+        'isDashboard': 'false',
+      });
 
       if (response.statusCode == 200) {
         final data = _asMap(response.data);
@@ -97,7 +113,7 @@ class AuthRepository extends GetxService {
     }
   }
 
-  /// Register new user
+  /// Register new user (Step 1: Send details, triggers OTP)
   Future<Map<String, dynamic>> register({
     required String username,
     required String email,
@@ -105,33 +121,34 @@ class AuthRepository extends GetxService {
     required String phoneNumber,
   }) async {
     try {
-      final response = await _apiClient.post(
-        ApiConstants.register, {
-          'username': username,
-          'phoneNumber': phoneNumber,
-          'email': email,
-          'password': password,
-        },
-      );
+      final response = await _apiClient.post(ApiConstants.register, {
+        'username': username,
+        'phoneNumber': phoneNumber,
+        'email': email,
+        'password': password,
+      });
 
       if (response.statusCode == 200 || response.statusCode == 201) {
         final data = _asMap(response.data);
         final payload = _authPayload(response.data);
         final authHeader = response.headers.value('authorization');
-        final token = _extractToken(
+
+        final token = _tryExtractToken(
           data,
           payload,
           headerAuthorization: authHeader,
         );
-        // Save token
-        await _storageService.saveToken(token);
-        _apiClient.setToken(token);
-        // Save user data
-        final userRaw = payload['user'] ?? data['user'];
-        if (userRaw is Map) {
-          await _storageService.saveUserData(
-            Map<String, dynamic>.from(userRaw),
-          );
+
+        if (token != null) {
+          // If token provided immediately (old behavior or auto-verified)
+          await _storageService.saveToken(token);
+          _apiClient.setToken(token);
+          final userRaw = payload['user'] ?? data['user'];
+          if (userRaw is Map) {
+            await _storageService.saveUserData(
+              Map<String, dynamic>.from(userRaw),
+            );
+          }
         }
         return data;
       } else {
@@ -140,6 +157,54 @@ class AuthRepository extends GetxService {
     } catch (e) {
       rethrow;
     }
+  }
+
+  /// Verify Registration OTP (Step 2: Connect account and get JWT)
+  Future<Map<String, dynamic>> verifyRegistration(
+    String email,
+    String code,
+  ) async {
+    try {
+      final response = await _apiClient.post(ApiConstants.verifyRegister, {
+        'identifier': email,
+        'code': code,
+      });
+
+      if (response.statusCode == 200) {
+        final data = _asMap(response.data);
+        final payload = _authPayload(response.data);
+        final authHeader = response.headers.value('authorization');
+        final token = _extractToken(
+          data,
+          payload,
+          headerAuthorization: authHeader,
+        );
+
+        // Save token and user data
+        await _storageService.saveToken(token);
+        _apiClient.setToken(token);
+        final userRaw = payload['user'] ?? data['user'];
+        if (userRaw is Map) {
+          await _storageService.saveUserData(
+            Map<String, dynamic>.from(userRaw),
+          );
+        }
+        return data;
+      } else {
+        throw Exception('Verification failed');
+      }
+    } catch (e) {
+      rethrow;
+    }
+  }
+
+  /// Resend Registration OTP
+  Future<void> resendRegistrationOtp(String email) async {
+    await _apiClient.post(
+      ApiConstants.resendRegisterOtp,
+      {},
+      queryParameters: {'email': email},
+    );
   }
 
   /// Logout current user
@@ -153,20 +218,32 @@ class AuthRepository extends GetxService {
     }
   }
 
-  /// Forgot password
-  Future<void> forgotPassword(String email) async {
-    try {
-      final response = await _apiClient.post(
-        ApiConstants.forgotPassword, {},
-        data: {'email': email},
-      );
+  /// Step 1: Send OTP to email or phone
+  Future<void> sendOtp(String identifier) async {
+    await _apiClient.post(ApiConstants.forgotPassword, {
+      'identifier': identifier,
+    });
+  }
 
-      if (response.statusCode != 200) {
-        throw Exception('Failed to send reset email');
-      }
-    } catch (e) {
-      rethrow;
-    }
+  /// Step 2: Verify OTP code
+  Future<void> verifyOtp(String identifier, String code) async {
+    await _apiClient.post(ApiConstants.verifyOtp, {
+      'identifier': identifier,
+      'code': code,
+    });
+  }
+
+  /// Step 3: Reset password with verified OTP
+  Future<void> resetPassword(
+    String identifier,
+    String code,
+    String newPassword,
+  ) async {
+    await _apiClient.post(ApiConstants.resetPassword, {
+      'identifier': identifier,
+      'code': code,
+      'newPassword': newPassword,
+    });
   }
 
   /// Get current user

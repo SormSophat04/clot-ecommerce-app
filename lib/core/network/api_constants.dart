@@ -9,7 +9,10 @@ abstract class ApiConstants {
   static const String logout = '$apiVersion/auth/logout';
   static const String refreshToken = '$apiVersion/auth/refresh';
   static const String forgotPassword = '$apiVersion/auth/forgot-password';
+  static const String verifyOtp = '$apiVersion/auth/verify-otp';
   static const String resetPassword = '$apiVersion/auth/reset-password';
+  static const String verifyRegister = '$apiVersion/auth/register/verify';
+  static const String resendRegisterOtp = '$apiVersion/auth/register/resend-otp';
 
   // User
   static const String userProfile = '$apiVersion/user/profile';

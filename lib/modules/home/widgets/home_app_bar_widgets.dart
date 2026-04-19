@@ -30,15 +30,15 @@ class AvatarButton extends StatelessWidget {
   }
 }
 
-class GenderDropdown extends StatelessWidget {
-  const GenderDropdown({
+class TypeDropdown extends StatelessWidget {
+  const TypeDropdown({
     super.key,
-    required this.selectedGender,
+    required this.selectedType,
     required this.surfaceMuted,
     required this.colors,
     required this.onTap,
   });
-  final String selectedGender;
+  final String selectedType;
   final Color surfaceMuted;
   final ColorScheme colors;
   final VoidCallback onTap;
@@ -57,7 +57,7 @@ class GenderDropdown extends StatelessWidget {
           mainAxisSize: MainAxisSize.min,
           children: [
             Text(
-              selectedGender,
+              selectedType,
               style: TextStyle(
                 fontSize: 14.sp,
                 fontWeight: FontWeight.w600,

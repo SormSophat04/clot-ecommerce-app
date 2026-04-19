@@ -19,31 +19,32 @@ class LoginView extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return GetBuilder<AuthController>(
-      tag: authControllerTag,
-      autoRemove: false,
-      builder: (controller) => AuthFormScaffold(
-        formKey: controller.loginFormKey,
-        autovalidateMode: AutovalidateMode.onUserInteraction,
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            AuthHeader(title: 'Sign in', topSpacing: Get.height * 0.05),
-            SizedBox(height: 40.h),
-            CustomTextField(
-              hint: 'Phone Number',
-              controller: controller.loginPhoneNumberController,
-              keyboardType: TextInputType.phone,
-              validator: Validators.phone,
-            ),
-            SizedBox(height: 16.h),
-            CustomTextField(
+    final controller = Get.find<AuthController>(tag: authControllerTag);
+
+    return AuthFormScaffold(
+      key: UniqueKey(),
+      formKey: controller.loginFormKey,
+      autovalidateMode: AutovalidateMode.onUserInteraction,
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          AuthHeader(title: 'Sign in', topSpacing: Get.height * 0.05),
+          SizedBox(height: 40.h),
+          CustomTextField(
+            hint: 'Phone Number',
+            controller: controller.loginPhoneNumberController,
+            keyboardType: TextInputType.phone,
+            validator: Validators.phone,
+          ),
+          SizedBox(height: 16.h),
+          Obx(
+            () => CustomTextField(
               hint: 'Password',
               controller: controller.loginPasswordController,
-              obscureText: !controller.isLoginPasswordVisible,
+              obscureText: !controller.isLoginPasswordVisible.value,
               suffixIcon: IconButton(
                 icon: Icon(
-                  controller.isLoginPasswordVisible
+                  controller.isLoginPasswordVisible.value
                       ? Icons.visibility_outlined
                       : Icons.visibility_off_outlined,
                 ),
@@ -51,33 +52,34 @@ class LoginView extends StatelessWidget {
               ),
               validator: Validators.password,
             ),
-            SizedBox(height: 44.h),
-            PrimaryButton(
+          ),
+          SizedBox(height: 44.h),
+          Obx(
+            () => PrimaryButton(
               text: 'Sign In',
-              isLoading: controller.isLoading,
+              isLoading: controller.isLoading.value,
               onPressed: controller.login,
             ),
-            SizedBox(height: 16.h),
-            SecondaryButton(
-              text: 'Create Account',
-              onPressed:
-                  onToggleToRegister ?? () => Get.toNamed(Routes.register),
-            ),
-            SizedBox(height: 16.h),
-            TextButton(
-              onPressed: () => Get.toNamed(Routes.forgotPassword),
-              child: const Text('Forgot Password?'),
-            ),
-            SizedBox(height: 16.h),
-            PlatformButton(
-              text: 'Facebook',
-              icon: Icon(Icons.facebook, color: Colors.blue, size: 36.sp),
-              onPressed: () {
-                // Implement social login logic
-              },
-            ),
-          ],
-        ),
+          ),
+          SizedBox(height: 16.h),
+          SecondaryButton(
+            text: 'Create Account',
+            onPressed: onToggleToRegister ?? () => Get.offNamed(Routes.register),
+          ),
+          SizedBox(height: 16.h),
+          TextButton(
+            onPressed: () => Get.offNamed(Routes.forgotPassword),
+            child: const Text('Forgot Password?'),
+          ),
+          SizedBox(height: 16.h),
+          PlatformButton(
+            text: 'Facebook',
+            icon: Icon(Icons.facebook, color: Colors.blue, size: 36.sp),
+            onPressed: () {
+              // Implement social login logic
+            },
+          ),
+        ],
       ),
     );
   }

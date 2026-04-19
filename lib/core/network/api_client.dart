@@ -168,48 +168,55 @@ class ApiClient extends GetxService {
       await _handleSessionExpiry();
       return;
     }
+  }
 
-    String message = 'An error occurred';
+  /// Extracts a human-readable error message from a DioException.
+  /// Prefers the server's `message` field in the ApiResponse body,
+  /// then falls back to a descriptive generic message.
+  String _extractErrorMessage(DioException error) {
+    // Try to get the server's actual message from the response body
+    final responseData = error.response?.data;
+    if (responseData is Map) {
+      final serverMessage = responseData['message'];
+      if (serverMessage is String && serverMessage.trim().isNotEmpty) {
+        return serverMessage.trim();
+      }
+    }
 
+    // Fallback to descriptive messages based on error type / status code
     switch (error.type) {
       case DioExceptionType.connectionTimeout:
-        message = 'Connection timeout';
-        break;
+        return 'Connection timed out. Please check your internet connection.';
       case DioExceptionType.sendTimeout:
-        message = 'Send timeout';
-        break;
+        return 'Request timed out while sending data. Please try again.';
       case DioExceptionType.receiveTimeout:
-        message = 'Receive timeout';
-        break;
+        return 'Server took too long to respond. Please try again.';
+      case DioExceptionType.cancel:
+        return 'Request was cancelled.';
       case DioExceptionType.badResponse:
         switch (error.response?.statusCode) {
           case 400:
-            message = 'Bad request';
-            break;
+            return 'Invalid request. Please check your input.';
           case 401:
-            message = 'Unauthorized';
-            break;
+            return 'Your session has expired. Please log in again.';
           case 403:
-            message = 'Forbidden';
-            break;
+            return 'You are not allowed to perform this action.';
           case 404:
-            message = 'Not found';
-            break;
+            return 'The requested resource was not found.';
+          case 409:
+            return 'A conflict occurred. The data may already exist.';
+          case 422:
+            return 'Validation failed. Please review your input.';
           case 500:
-            message = 'Internal server error';
-            break;
+            return 'Something went wrong on the server. Please try again later.';
+          case 503:
+            return 'Service is temporarily unavailable. Please try again later.';
           default:
-            message = 'Server error: ${error.response?.statusCode}';
+            return 'Unexpected server error (${error.response?.statusCode}).';
         }
-        break;
-      case DioExceptionType.cancel:
-        message = 'Request cancelled';
-        break;
       default:
-        message = 'Network error';
+        return 'Network error. Please check your internet connection.';
     }
-
-    Get.snackbar('Error', message, snackPosition: SnackPosition.BOTTOM);
   }
 
   bool _shouldHandleSessionExpiry(DioException error) {
@@ -257,12 +264,6 @@ class ApiClient extends GetxService {
         await Future<void>.delayed(Duration.zero);
         Get.offAllNamed(Routes.login);
       }
-
-      Get.snackbar(
-        'Session Expired',
-        'Please sign in again.',
-        snackPosition: SnackPosition.BOTTOM,
-      );
     } finally {
       _isHandlingSessionExpiry = false;
     }

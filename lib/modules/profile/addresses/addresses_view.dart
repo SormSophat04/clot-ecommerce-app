@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
+import 'package:clot_ecommerce_app/core/routes/app_routes.dart';
 
 class AddressesView extends StatelessWidget {
   const AddressesView({super.key});
@@ -73,6 +74,11 @@ class AddressesView extends StatelessWidget {
             ),
           ],
         ),
+      ),
+      floatingActionButton: FloatingActionButton(
+        onPressed: () => Get.toNamed(Routes.addAddress),
+        backgroundColor: colorScheme.primary,
+        child: Icon(Icons.add_rounded, color: colorScheme.onPrimary),
       ),
     );
   }

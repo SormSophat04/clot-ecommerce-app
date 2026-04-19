@@ -33,8 +33,8 @@ class HomeController extends GetxController {
   final ProductRepository _productRepository;
   final CategoryRepository _categoryRepository;
 
-  // ── Gender filter ────────────────────────────────────────────────────────
-  final selectedGender = 'Men'.obs;
+  // ── Type filter ──────────────────────────────────────────────────────────
+  final selectedType = 'Men'.obs;
 
   // ── Wishlist set (stores product ids) ───────────────────────────────────
   final RxSet<String> wishlist = <String>{}.obs;
@@ -54,6 +54,7 @@ class HomeController extends GetxController {
   final RxList<ProductModel> newIn = <ProductModel>[].obs;
   final RxBool isLoadingProducts = false.obs;
   final RxString productsError = ''.obs;
+  final List<ProductModel> _allHomeProducts = <ProductModel>[];
 
   // ── Home categories state ────────────────────────────────────────────────
   final RxList<CategoryItem> categories = <CategoryItem>[].obs;
@@ -117,7 +118,10 @@ class HomeController extends GetxController {
         limit: 20,
         includeFirstImage: false,
       );
-      _applyHomeSections(products);
+      _allHomeProducts
+        ..clear()
+        ..addAll(products);
+      _applyHomeSections(_filterProductsBySelectedType(products));
 
       final productsToHydrate = <ProductModel>[
         ...topSelling,
@@ -132,6 +136,7 @@ class HomeController extends GetxController {
         );
       }
     } catch (error) {
+      _allHomeProducts.clear();
       topSelling.clear();
       newIn.clear();
       productsError.value = _buildProductsErrorMessage(error);
@@ -176,6 +181,41 @@ class HomeController extends GetxController {
 
     topSelling.assignAll(topProducts);
     newIn.assignAll(newProducts);
+  }
+
+  void setSelectedType(String type) {
+    final normalizedType = type.trim();
+    if (normalizedType.isEmpty || selectedType.value == normalizedType) {
+      return;
+    }
+
+    selectedType.value = normalizedType;
+    final filteredProducts = _filterProductsBySelectedType(_allHomeProducts);
+    _applyHomeSections(filteredProducts);
+
+    final productsToHydrate = <ProductModel>[
+      ...topSelling,
+      ...newIn,
+    ];
+    if (productsToHydrate.isNotEmpty) {
+      final requestGeneration = ++_homeProductsGeneration;
+      unawaited(
+        _hydrateHomeSectionImages(
+          products: productsToHydrate,
+          generation: requestGeneration,
+        ),
+      );
+    }
+  }
+
+  List<ProductModel> _filterProductsBySelectedType(List<ProductModel> products) {
+    if (products.isEmpty) {
+      return const <ProductModel>[];
+    }
+
+    return products
+        .where((product) => product.matchesType(selectedType.value))
+        .toList();
   }
 
   Future<void> _hydrateHomeSectionImages({

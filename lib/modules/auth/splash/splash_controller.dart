@@ -1,7 +1,7 @@
 import 'package:get/get.dart';
 
 class SplashController extends GetxController {
-  final selectedGender = 'Men'.obs;
+  final selectedType = 'Men'.obs;
   final selectedAgeRange = 'Age Range'.obs;
 
   final List<String> ageRanges = [
@@ -13,8 +13,8 @@ class SplashController extends GetxController {
     '55+',
   ];
 
-  void setGender(String gender) {
-    selectedGender.value = gender;
+  void setType(String type) {
+    selectedType.value = type;
   }
 
   void setAgeRange(String ageRange) {
@@ -31,4 +31,3 @@ class SplashController extends GetxController {
     // Currently used for onboarding setup, so we do not auto-navigate here
   }
 }
-

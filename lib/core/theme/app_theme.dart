@@ -301,12 +301,6 @@ abstract class AppTheme {
           return TextStyle(color: colorScheme.onSurfaceVariant);
         }),
       ),
-      snackBarTheme: SnackBarThemeData(
-        backgroundColor: colorScheme.inverseSurface,
-        contentTextStyle: TextStyle(color: colorScheme.onInverseSurface),
-        actionTextColor: colorScheme.inversePrimary,
-        behavior: SnackBarBehavior.floating,
-      ),
       progressIndicatorTheme: ProgressIndicatorThemeData(
         color: colorScheme.primary,
         linearTrackColor: inputFillColor,

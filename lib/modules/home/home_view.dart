@@ -1,5 +1,4 @@
 import 'package:clot_ecommerce_app/core/routes/app_routes.dart';
-import 'package:clot_ecommerce_app/core/widgets/common/loading_indicator.dart';
 import 'package:clot_ecommerce_app/core/widgets/common/skeleton_loader.dart';
 import 'package:clot_ecommerce_app/data/models/product_model.dart';
 import 'package:clot_ecommerce_app/modules/home/home_controller.dart';
@@ -133,11 +132,81 @@ class HomeView extends StatelessWidget {
         child: AvatarButton(surfaceMuted: surfaceMuted, colors: colors),
       ),
       title: Obx(
-        () => GenderDropdown(
-          selectedGender: controller.selectedGender.value,
+        () => TypeDropdown(
+          selectedType: controller.selectedType.value,
           surfaceMuted: surfaceMuted,
           colors: colors,
-          onTap: () {},
+          onTap: () {
+            Get.bottomSheet(
+              Container(
+                padding: EdgeInsets.all(24.r),
+                decoration: BoxDecoration(
+                  color: colors.surface,
+                  borderRadius: BorderRadius.only(
+                    topLeft: Radius.circular(30.r),
+                    topRight: Radius.circular(30.r),
+                  ),
+                ),
+                child: SafeArea(
+                  child: Column(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      Container(
+                        width: 40.w,
+                        height: 4.h,
+                        decoration: BoxDecoration(
+                          color: colors.outline.withValues(alpha: 0.4),
+                          borderRadius: BorderRadius.circular(2.r),
+                        ),
+                      ),
+                      SizedBox(height: 24.h),
+                      Text(
+                        'Who do you shop for ?',
+                        style: Theme.of(context).textTheme.titleLarge?.copyWith(
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
+                      SizedBox(height: 24.h),
+                      Obx(() => Column(
+                            children: ['Men', 'Women', 'Kids']
+                                .map((type) => GestureDetector(
+                                      onTap: () {
+                                        controller.setSelectedType(type);
+                                        Get.back();
+                                      },
+                                      child: Container(
+                                        width: double.infinity,
+                                        padding: EdgeInsets.symmetric(vertical: 16.h),
+                                        margin: EdgeInsets.only(bottom: 12.h),
+                                        decoration: BoxDecoration(
+                                          color: controller.selectedType.value == type
+                                              ? colors.primary
+                                              : surfaceMuted,
+                                          borderRadius: BorderRadius.circular(30.r),
+                                        ),
+                                        alignment: Alignment.center,
+                                        child: Text(
+                                          type,
+                                          style: TextStyle(
+                                            fontSize: 16.sp,
+                                            fontWeight: FontWeight.w600,
+                                            color: controller.selectedType.value == type
+                                                ? colors.onPrimary
+                                                : colors.onSurface,
+                                          ),
+                                        ),
+                                      ),
+                                    ))
+                                .toList(),
+                          )),
+                    ],
+                  ),
+                ),
+              ),
+              backgroundColor: Colors.transparent,
+              isScrollControlled: true,
+            );
+          },
         ),
       ),
       centerTitle: true,

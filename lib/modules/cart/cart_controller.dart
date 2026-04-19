@@ -69,7 +69,6 @@ class CartController extends GetxController {
   Future<void> updateQuantity(cart_model.CartItemModel item, int delta) async {
     final productId = item.product.id.trim();
     if (productId.isEmpty) {
-      _showError('Unable to update this item.');
       return;
     }
     if (_busyProductIds.contains(productId) || isClearing.value) {
@@ -90,9 +89,7 @@ class CartController extends GetxController {
         _upsertLocalItem(updated);
       }
     } catch (error) {
-      _showError(
-        _buildErrorMessage(error, fallback: 'Unable to update cart item.'),
-      );
+      // Error handled silently or via state
     } finally {
       _busyProductIds.remove(productId);
     }
@@ -101,7 +98,6 @@ class CartController extends GetxController {
   Future<void> removeItem(cart_model.CartItemModel item) async {
     final productId = item.product.id.trim();
     if (productId.isEmpty) {
-      _showError('Unable to remove this item.');
       return;
     }
     if (_busyProductIds.contains(productId) || isClearing.value) {
@@ -113,9 +109,7 @@ class CartController extends GetxController {
       await _cartRepository.removeFromCart(productId);
       _removeLocalItemByProductId(productId);
     } catch (error) {
-      _showError(
-        _buildErrorMessage(error, fallback: 'Unable to remove cart item.'),
-      );
+      // Error handled silently or via state
     } finally {
       _busyProductIds.remove(productId);
     }
@@ -131,7 +125,7 @@ class CartController extends GetxController {
       await _cartRepository.clearCart();
       cartItems.clear();
     } catch (error) {
-      _showError(_buildErrorMessage(error, fallback: 'Unable to clear cart.'));
+      // Error handled silently or via state
     } finally {
       isClearing.value = false;
     }
@@ -216,17 +210,6 @@ class CartController extends GetxController {
     );
   }
 
-  void _showError(String message) {
-    Get.snackbar(
-      'Cart Error',
-      message,
-      snackPosition: SnackPosition.BOTTOM,
-      backgroundColor: Colors.red.withValues(alpha: 0.9),
-      colorText: Colors.white,
-      margin: const EdgeInsets.all(16),
-      duration: const Duration(seconds: 2),
-    );
-  }
 
   String _buildErrorMessage(Object error, {required String fallback}) {
     if (error is DioException) {

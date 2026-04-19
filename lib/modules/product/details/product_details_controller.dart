@@ -173,7 +173,6 @@ class ProductDetailsController extends GetxController {
 
     final productId = _productId ?? _toBackendProductId(product.value?.id);
     if (productId == null || productId.isEmpty) {
-      _showAddToBagError('Unable to identify this product.');
       return;
     }
 
@@ -181,19 +180,8 @@ class ProductDetailsController extends GetxController {
     try {
       final qty = quantity.value.clamp(1, 99).toInt();
       await _cartRepository.addToCart(productId: productId, quantity: qty);
-
-      final itemText = qty > 1 ? 'items' : 'item';
-      Get.snackbar(
-        'Added to Bag',
-        'Added $qty $itemText of $productName (${selectedSize.value}) to bag.',
-        snackPosition: SnackPosition.BOTTOM,
-        backgroundColor: Colors.green.withValues(alpha: 0.75),
-        colorText: Colors.white,
-        margin: const EdgeInsets.all(16),
-        duration: const Duration(seconds: 2),
-      );
     } catch (error) {
-      _showAddToBagError(_buildAddToBagErrorMessage(error));
+      // Error handled silently or via state
     } finally {
       isAddingToBag.value = false;
     }
@@ -328,63 +316,5 @@ class ProductDetailsController extends GetxController {
 
   String _formatPrice(double value) => '\$${value.toStringAsFixed(2)}';
 
-  void _showAddToBagError(String message) {
-    Get.snackbar(
-      'Add to Bag Failed',
-      message,
-      snackPosition: SnackPosition.BOTTOM,
-      backgroundColor: Colors.red.withValues(alpha: 0.9),
-      colorText: Colors.white,
-      margin: const EdgeInsets.all(16),
-      duration: const Duration(seconds: 2),
-    );
-  }
 
-  String _buildAddToBagErrorMessage(Object error) {
-    if (error is DioException) {
-      final statusCode = error.response?.statusCode;
-      if (statusCode == 401 || statusCode == 403) {
-        return 'Please sign in again to continue.';
-      }
-      if (statusCode == 404) {
-        return 'Product or user was not found.';
-      }
-      if (statusCode == 409) {
-        return 'This product is already in your cart.';
-      }
-      if (statusCode == 400) {
-        return 'Invalid cart request. Please try again.';
-      }
-
-      final serverMessage = _extractServerMessage(error.response?.data);
-      if (serverMessage != null && serverMessage.isNotEmpty) {
-        return serverMessage;
-      }
-    }
-
-    final fallbackMessage = error.toString().trim();
-    if (fallbackMessage.isNotEmpty &&
-        fallbackMessage.toLowerCase() != 'exception') {
-      return fallbackMessage.replaceFirst('Exception: ', '');
-    }
-    return 'Unable to add item to cart. Please try again.';
-  }
-
-  String? _extractServerMessage(dynamic data) {
-    if (data is Map) {
-      final map = Map<String, dynamic>.from(data);
-      final message =
-          map['message'] ??
-          map['error'] ??
-          (map['data'] is Map ? (map['data'] as Map)['message'] : null);
-      if (message == null) return null;
-      final text = message.toString().trim();
-      return text.isEmpty ? null : text;
-    }
-    if (data is String) {
-      final text = data.trim();
-      return text.isEmpty ? null : text;
-    }
-    return null;
-  }
 }

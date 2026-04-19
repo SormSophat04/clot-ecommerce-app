@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:get/get.dart';
 import '../../core/routes/app_routes.dart';
+import '../../data/repositories/auth_repository.dart';
 
 class ProfileView extends StatelessWidget {
   const ProfileView({super.key});
@@ -151,8 +152,13 @@ class ProfileView extends StatelessWidget {
         actions: [
           TextButton(onPressed: Get.back, child: const Text('Cancel')),
           TextButton(
-            onPressed: () {
-              Get.back();
+            onPressed: () async {
+              Get.back(); // close dialog
+              try {
+                await Get.find<AuthRepository>().logout();
+              } catch (e) {
+                debugPrint('Logout error: $e');
+              }
               Get.offAllNamed(Routes.login);
             },
             child: Text('Logout', style: TextStyle(color: colors.error)),

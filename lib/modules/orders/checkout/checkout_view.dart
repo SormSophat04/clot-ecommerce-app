@@ -2,11 +2,21 @@ import 'package:clot_ecommerce_app/core/widgets/common/app_bar.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 
-class CheckoutView extends StatelessWidget {
+class CheckoutController extends GetxController {
+  final selectedPaymentMethod = 'Cash'.obs;
+
+  void setPaymentMethod(String method) {
+    selectedPaymentMethod.value = method;
+    Get.back();
+  }
+}
+
+class CheckoutView extends GetView<CheckoutController> {
   const CheckoutView({super.key});
 
   @override
   Widget build(BuildContext context) {
+    Get.put(CheckoutController());
     final theme = Theme.of(context);
     final colorScheme = theme.colorScheme;
 
@@ -112,55 +122,184 @@ class CheckoutView extends StatelessWidget {
   }
 
   Widget _buildPaymentCard(ThemeData theme, ColorScheme colorScheme) {
-    return Container(
-      decoration: BoxDecoration(
-        color: colorScheme.surface,
-        borderRadius: BorderRadius.circular(16),
-        border: Border.all(color: colorScheme.outline.withOpacity(0.2)),
-        boxShadow: [
-          BoxShadow(
-            color: colorScheme.shadow,
-            blurRadius: 8,
-            offset: const Offset(0, 2),
-          ),
-        ],
-      ),
-      padding: const EdgeInsets.all(16),
-      child: Row(
-        children: [
-          Container(
-            padding: const EdgeInsets.all(12),
-            decoration: BoxDecoration(
-              color: colorScheme.primaryContainer,
-              borderRadius: BorderRadius.circular(12),
+    return Obx(() {
+      final isCash = controller.selectedPaymentMethod.value == 'Cash';
+      return Container(
+        decoration: BoxDecoration(
+          color: colorScheme.surface,
+          borderRadius: BorderRadius.circular(16),
+          border: Border.all(color: colorScheme.outline.withOpacity(0.2)),
+          boxShadow: [
+            BoxShadow(
+              color: colorScheme.shadow,
+              blurRadius: 8,
+              offset: const Offset(0, 2),
             ),
-            child: Icon(
-              Icons.credit_card,
-              color: colorScheme.onPrimaryContainer,
-            ),
-          ),
-          const SizedBox(width: 16),
-          Expanded(
-            child: Text(
-              '**** **** **** 2143',
-              style: theme.textTheme.titleMedium?.copyWith(
-                fontWeight: FontWeight.w600,
-                letterSpacing: 1.5,
+          ],
+        ),
+        padding: const EdgeInsets.all(16),
+        child: Row(
+          children: [
+            Container(
+              padding: const EdgeInsets.all(12),
+              decoration: BoxDecoration(
+                color: colorScheme.primaryContainer,
+                borderRadius: BorderRadius.circular(12),
+              ),
+              child: Icon(
+                isCash ? Icons.money : Icons.qr_code,
+                color: colorScheme.onPrimaryContainer,
               ),
             ),
-          ),
-          TextButton(
-            onPressed: () {},
-            style: TextButton.styleFrom(
-              minimumSize: Size.zero,
-              tapTargetSize: MaterialTapTargetSize.shrinkWrap,
-              padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+            const SizedBox(width: 16),
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    isCash ? 'Cash on Delivery' : 'KHQR',
+                    style: theme.textTheme.titleMedium?.copyWith(
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
+                  const SizedBox(height: 4),
+                  Text(
+                    isCash ? 'Pay in cash upon receiving' : 'Scan KHQR to pay',
+                    style: theme.textTheme.bodyMedium?.copyWith(
+                      color: colorScheme.onSurfaceVariant,
+                    ),
+                  ),
+                ],
+              ),
             ),
-            child: const Text('Change'),
-          ),
-        ],
+            TextButton(
+              onPressed: () => _showPaymentSelection(Get.context!, theme, colorScheme),
+              style: TextButton.styleFrom(
+                minimumSize: Size.zero,
+                tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+                padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+              ),
+              child: const Text('Change'),
+            ),
+          ],
+        ),
+      );
+    });
+  }
+
+  void _showPaymentSelection(BuildContext context, ThemeData theme, ColorScheme colorScheme) {
+    showModalBottomSheet(
+      context: context,
+      backgroundColor: colorScheme.surface,
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
       ),
+      builder: (context) {
+        return Container(
+          padding: const EdgeInsets.all(24),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(
+                'Select Payment Method',
+                style: theme.textTheme.titleLarge?.copyWith(
+                  fontWeight: FontWeight.bold,
+                ),
+              ),
+              const SizedBox(height: 24),
+              _buildPaymentOption(
+                'Cash',
+                'Cash on Delivery',
+                'Pay in cash upon receiving',
+                Icons.money,
+                theme,
+                colorScheme,
+              ),
+              const SizedBox(height: 16),
+              _buildPaymentOption(
+                'KHQR',
+                'KHQR',
+                'Scan KHQR to pay',
+                Icons.qr_code,
+                theme,
+                colorScheme,
+              ),
+              const SizedBox(height: 24),
+            ],
+          ),
+        );
+      },
     );
+  }
+
+  Widget _buildPaymentOption(
+    String methodId,
+    String title,
+    String subtitle,
+    IconData icon,
+    ThemeData theme,
+    ColorScheme colorScheme,
+  ) {
+    return Obx(() {
+      final isSelected = controller.selectedPaymentMethod.value == methodId;
+      return InkWell(
+        onTap: () => controller.setPaymentMethod(methodId),
+        borderRadius: BorderRadius.circular(16),
+        child: Container(
+          padding: const EdgeInsets.all(16),
+          decoration: BoxDecoration(
+            border: Border.all(
+              color: isSelected ? colorScheme.primary : colorScheme.outline.withOpacity(0.2),
+              width: isSelected ? 2 : 1,
+            ),
+            borderRadius: BorderRadius.circular(16),
+            color: isSelected ? colorScheme.primaryContainer.withOpacity(0.1) : Colors.transparent,
+          ),
+          child: Row(
+            children: [
+              Container(
+                padding: const EdgeInsets.all(12),
+                decoration: BoxDecoration(
+                  color: colorScheme.primaryContainer,
+                  borderRadius: BorderRadius.circular(12),
+                ),
+                child: Icon(
+                  icon,
+                  color: colorScheme.onPrimaryContainer,
+                ),
+              ),
+              const SizedBox(width: 16),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      title,
+                      style: theme.textTheme.titleMedium?.copyWith(
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
+                    const SizedBox(height: 4),
+                    Text(
+                      subtitle,
+                      style: theme.textTheme.bodyMedium?.copyWith(
+                        color: colorScheme.onSurfaceVariant,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+              if (isSelected)
+                Icon(
+                  Icons.check_circle,
+                  color: colorScheme.primary,
+                ),
+            ],
+          ),
+        ),
+      );
+    });
   }
 
   Widget _buildOrderSummary(ThemeData theme, ColorScheme colorScheme) {
@@ -269,6 +408,6 @@ class CheckoutView extends StatelessWidget {
 class CheckoutBinding extends Bindings {
   @override
   void dependencies() {
-    // Get.lazyPut<CheckoutController>(() => CheckoutController());
+    Get.lazyPut<CheckoutController>(() => CheckoutController());
   }
 }

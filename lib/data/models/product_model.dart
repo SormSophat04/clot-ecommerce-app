@@ -1,4 +1,8 @@
 class ProductModel {
+  static const String typeMen = 'men';
+  static const String typeWomen = 'women';
+  static const String typeKids = 'kids';
+
   final String id;
   final String name;
   final String description;
@@ -9,7 +13,7 @@ class ProductModel {
   final int stock;
   final String categoryId;
   final String categoryName;
-  final String? gender;
+  final List<String> types;
   final String? brandId;
   final String? brandName;
   final double rating;
@@ -31,7 +35,7 @@ class ProductModel {
     required this.stock,
     required this.categoryId,
     required this.categoryName,
-    this.gender,
+    this.types = const [],
     this.brandId,
     this.brandName,
     this.rating = 0,
@@ -67,7 +71,10 @@ class ProductModel {
             json['categoryName'] ??
             category['categoryName'],
       ),
-      gender: _asNullableString(json['gender']),
+      types: _normalizeTypes(
+        _toStringList(json['types']),
+        legacyType: _asNullableString(json['type'] ?? json['gender']),
+      ),
       brandId: _asNullableString(
         json['brand_id'] ?? json['brandId'] ?? brand['brandId'],
       ),
@@ -110,7 +117,7 @@ class ProductModel {
       'stock': stock,
       'category_id': categoryId,
       'category_name': categoryName,
-      'gender': gender,
+      'types': types,
       'brand_id': brandId,
       'brand_name': brandName,
       'rating': rating,
@@ -134,7 +141,7 @@ class ProductModel {
     int? stock,
     String? categoryId,
     String? categoryName,
-    String? gender,
+    List<String>? types,
     String? brandId,
     String? brandName,
     double? rating,
@@ -156,7 +163,7 @@ class ProductModel {
       stock: stock ?? this.stock,
       categoryId: categoryId ?? this.categoryId,
       categoryName: categoryName ?? this.categoryName,
-      gender: gender ?? this.gender,
+      types: types ?? this.types,
       brandId: brandId ?? this.brandId,
       brandName: brandName ?? this.brandName,
       rating: rating ?? this.rating,
@@ -171,6 +178,13 @@ class ProductModel {
 
   double get finalPrice => salePrice ?? price;
   bool get onSale => salePrice != null && salePrice! < price;
+  bool matchesType(String selectedType) {
+    final normalizedSelectedType = _normalizeTypeValue(selectedType);
+    if (normalizedSelectedType == null) return true;
+    if (types.isEmpty) return true;
+    return types.contains(normalizedSelectedType);
+  }
+
   double get discountPercentage {
     if (salePrice == null || salePrice! >= price || price == 0) return 0;
     return ((price - salePrice!) / price * 100);
@@ -189,6 +203,46 @@ class ProductModel {
         .whereType<String>()
         .where((item) => item.isNotEmpty)
         .toList();
+  }
+
+  static List<String> _normalizeTypes(
+    List<String> rawTypes, {
+    String? legacyType,
+  }) {
+    final normalized = <String>{};
+
+    for (final rawType in rawTypes) {
+      final normalizedType = _normalizeTypeValue(rawType);
+      if (normalizedType != null) {
+        normalized.add(normalizedType);
+      }
+    }
+
+    if (normalized.isEmpty && legacyType != null) {
+      final normalizedLegacy = _normalizeTypeValue(legacyType);
+      if (normalizedLegacy != null) {
+        normalized.add(normalizedLegacy);
+      }
+    }
+
+    return normalized.toList();
+  }
+
+  static String? _normalizeTypeValue(String? rawType) {
+    if (rawType == null) return null;
+    final normalized = rawType.trim().toLowerCase();
+    if (normalized.isEmpty) return null;
+
+    if (normalized == 'male') return typeMen;
+    if (normalized == 'female') return typeWomen;
+
+    if (normalized == typeMen ||
+        normalized == typeWomen ||
+        normalized == typeKids) {
+      return normalized;
+    }
+
+    return null;
   }
 
   static List<String> _extractOptionNames(
